@@ -1,667 +1,343 @@
 <!DOCTYPE html>
-<html lang="en-AU">
+<html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Parent's CBT Pain Coach</title>
+    <title>CBT & Dr. K for Teen Pain: A Parent's Visual Guide</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Chosen Palette: Soothing Neutrals & Sage -->
-    <!-- Application Structure Plan: A tab-based SPA. The structure divides the dense report into four logical, user-friendly sections: 1. Overview: A dashboard to introduce the core concept (interactive Pain Triangle) and provide entry points. 2. Action Plan: An interactive accordion for the phased plan, preventing overwhelm. 3. Toolkit: A practical area for quick access to interactive tools like the Activities Menu and Coping Statements. 4. Foundations: A reference library for the underlying theories (Pain Science, Sleep/Nutrition). This task-oriented design allows a parent to easily access information based on their immediate need (e.g., "I need an activity now" vs. "I want to understand the theory"), which is more usable than a linear document. -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Chosen Palette: Energetic & Playful (Modified) -->
+    <!-- Application Structure Plan: A top-to-bottom, single-page scrolling infographic telling a narrative story. It starts with a hook (prevalence statistic), defines the core problem (the Vicious Cycle), introduces the solution (Pacing vs. Boom/Bust and the 3-Phase Plan), incorporates Dr. K's unique wisdom in a distinct section (Dharma, Samskaras, Dopamine), details key skills (Thinking Traps), and concludes with the parent's role. This linear narrative is ideal for an infographic, guiding the user logically through a complex topic. -->
     <!-- Visualization & Content Choices: 
-        - The Pain Triangle (Report Info) -> Goal: Demonstrate Relationships -> Viz: Interactive diagram with HTML/CSS and a central Chart.js polar area chart -> Interaction: Clicking on a corner (Thought/Feeling/Behavior) updates a text panel with specific examples. -> Justification: Makes the core CBT concept tangible and engaging. -> Library: Chart.js.
-        - The Action Plan (Report Info) -> Goal: Organize & Guide -> Viz: HTML/JS Accordion -> Interaction: Clicking a phase expands its content. -> Justification: Breaks the 14-week plan into manageable, focused steps. -> Library: Vanilla JS.
-        - Pleasant Activities Menu (Report Info) -> Goal: Organize & Inform -> Viz: Filterable gallery of HTML cards -> Interaction: Buttons filter activities by effort level. -> Justification: Turns a static list into a practical, in-the-moment tool. -> Library: Vanilla JS.
-        - Coping Statements (Report Info) -> Goal: Empower -> Viz: HTML card with a button -> Interaction: Button click shows a new random statement. -> Justification: Provides quick, accessible encouragement. -> Library: Vanilla JS.
-        - All other content is presented in styled HTML lists and text blocks for clarity and readability.
+        - Teen Pain Prevalence (11-38% Statistic): Goal: Inform -> Viz: Donut Chart -> Justification: Grabs attention and establishes the scale of the problem. -> Method: Chart.js/Canvas.
+        - The Vicious Cycle of Pain: Goal: Organize (Process) -> Viz: HTML/CSS Flowchart -> Justification: Visually demonstrates the feedback loop described in the text. Adheres to NO SVG/Mermaid constraint. -> Method: HTML/CSS with Tailwind.
+        - Pacing vs. Boom/Bust Cycle: Goal: Compare/Change -> Viz: Two side-by-side Line Charts -> Justification: Provides a stark visual contrast between the maladaptive cycle and the recommended pacing strategy. -> Method: Chart.js/Canvas.
+        - CBT 3-Phase Plan: Goal: Organize (Process) -> Viz: Vertical Timeline -> Justification: Breaks the plan into a clear, chronological, and non-overwhelming roadmap. -> Method: HTML/CSS with Tailwind.
+        - Dr. K's Concepts & Thinking Traps: Goal: Organize (Groupings) -> Viz: Icon-based Info Cards -> Justification: Presents abstract concepts as distinct, memorable, and visually appealing items. -> Method: HTML/CSS with Tailwind.
     -->
     <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #FDFBF7; }
-        .tab-active { border-color: #4A5568; color: #2D3748; background-color: #E2E8F0; }
-        .tab-inactive { border-color: transparent; color: #6b7280; }
-        .content-section { display: none; }
-        .content-section.active { display: block; }
-        .accordion-header { cursor: pointer; }
-        .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.5s ease-out; }
-        .activity-card { transition: all 0.3s ease; }
-        .chart-container { position: relative; width: 100%; max-width: 450px; margin-left: auto; margin-right: auto; height: 350px; max-height: 400px; }
-        .triangle-container { position: relative; width: 100%; max-width: 500px; height: 400px; margin: 2rem auto; }
-        .triangle-point { position: absolute; width: 120px; text-align: center; cursor: pointer; padding: 0.75rem; border: 2px solid transparent; border-radius: 0.5rem; transition: all 0.3s ease; }
-        .triangle-point.active { border-color: #6B8E23; background-color: #F0F8EA; }
-        .triangle-point-top { top: 0; left: 50%; transform: translateX(-50%); }
-        .triangle-point-left { bottom: 0; left: 0; }
-        .triangle-point-right { bottom: 0; right: 0; }
-        .loader {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #6B8E23;
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            animation: spin 1s linear infinite;
-            margin: 1rem auto;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .chart-container { position: relative; width: 100%; max-width: 400px; margin-left: auto; margin-right: auto; height: 300px; max-height: 400px; }
+        @media (min-width: 768px) { .chart-container { height: 350px; } }
+        .flowchart-arrow { color: #118AB2; font-weight: bold; font-size: 1.5rem; line-height: 1; }
     </style>
 </head>
-<body class="text-gray-800">
+<body class="text-slate-800">
 
-    <div class="container mx-auto p-4 md:p-8 max-w-7xl">
-        
-        <header class="text-center mb-8">
-            <h1 class="text-3xl md:text-4xl font-bold text-gray-900">Your AI-Powered CBT Pain Coach</h1>
-            <p class="mt-2 text-lg text-gray-600">A Collaborative Path to Re-engagement and Well-being for Your Teen</p>
+    <div class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
+
+        <header class="text-center my-12">
+            <h1 class="text-4xl md:text-5xl font-bold text-[#073B4C]">A Visual Guide to Helping Your Teen Thrive With Chronic Pain</h1>
+            <p class="mt-4 text-lg text-slate-600 max-w-3xl mx-auto">An integrative approach combining Cognitive Behavioral Therapy (CBT) with insights from Dr. K of Healthy Gamer.</p>
         </header>
 
-        <div class="bg-white p-4 rounded-xl shadow-md">
-            <nav id="tabs" class="flex flex-wrap justify-center border-b border-gray-200">
-                <button data-tab="overview" class="tab-button text-sm md:text-base py-3 px-4 md:px-6 font-semibold border-b-4 transition-colors duration-300 tab-active">
-                    <span class="mr-2">🏠</span>Overview
-                </button>
-                <button data-tab="plan" class="tab-button text-sm md:text-base py-3 px-4 md:px-6 font-semibold border-b-4 transition-colors duration-300 tab-inactive">
-                    <span class="mr-2">🗓️</span>The Action Plan
-                </button>
-                <button data-tab="toolkit" class="tab-button text-sm md:text-base py-3 px-4 md:px-6 font-semibold border-b-4 transition-colors duration-300 tab-inactive">
-                    <span class="mr-2">🛠️</span>Toolkit
-                </button>
-                <button data-tab="foundations" class="tab-button text-sm md:text-base py-3 px-4 md:px-6 font-semibold border-b-4 transition-colors duration-300 tab-inactive">
-                    <span class="mr-2">📚</span>Foundations
-                </button>
-            </nav>
+        <main class="space-y-20 md:space-y-28">
 
-            <main id="tab-content" class="mt-8">
-                
-                <!-- Overview Section -->
-                <section id="overview" class="content-section active">
-                    <div class="text-center">
-                        <h2 class="text-2xl font-bold mb-2">Welcome, Supportive Ally</h2>
-                        <p class="text-gray-600 max-w-3xl mx-auto">This application is designed to empower you as an effective 'pain coach' for your daughter. Our goal isn't to cure the pain, but to systematically break the cycle that perpetuates it. By focusing on small shifts in behaviours and thoughts, you can help your daughter regain control and rediscover joy. Start by exploring the Pain Triangle below to understand the core concept of CBT.</p>
+            <section id="prevalence">
+                <h2 class="text-3xl font-bold text-center text-[#073B4C]">Your Family Is Not Alone</h2>
+                <p class="text-center mt-3 text-slate-600 max-w-2xl mx-auto">Chronic pain is a significant challenge facing many young people. Understanding its prevalence is the first step in recognizing the scale of the issue and de-stigmatizing your daughter's experience.</p>
+                <div class="mt-8 grid grid-cols-1 md:grid-cols-2 items-center gap-8">
+                    <div class="bg-white rounded-lg shadow-lg p-6">
+                        <h3 class="font-bold text-2xl text-[#118AB2]">A Widespread Challenge</h3>
+                        <p class="mt-4 text-slate-600">Research shows that chronic pain is surprisingly common in adolescents, affecting a significant portion of the population. This isn't a rare condition, but a widespread health issue that impacts school, social life, and mental well-being for many.</p>
+                        <p class="mt-4 text-5xl font-bold text-[#FF6B6B]">11% to 38%</p>
+                        <p class="mt-2 font-semibold text-slate-700">of children and adolescents experience chronic pain.</p>
                     </div>
-
-                    <div class="mt-8 p-6 bg-stone-50 rounded-xl">
-                        <h3 class="text-xl font-bold text-center mb-4">The Interactive Pain Triangle</h3>
-                        <div class="triangle-container">
-                             <div id="thought-point" data-content="thought" class="triangle-point triangle-point-top group">
-                                <span class="text-3xl">🤔</span>
-                                <p class="font-semibold mt-1">Thoughts</p>
-                            </div>
-                            <div id="feeling-point" data-content="feeling" class="triangle-point triangle-point-left group">
-                                <span class="text-3xl">😟</span>
-                                <p class="font-semibold mt-1">Feelings</p>
-                            </div>
-                             <div id="behavior-point" data-content="behavior" class="triangle-point triangle-point-right group">
-                                <span class="text-3xl">🛌</span>
-                                <p class="font-semibold mt-1">Behaviours</p>
-                            </div>
-                            <div class="absolute inset-0 flex items-center justify-center">
-                                <div class="chart-container">
-                                    <canvas id="painTriangleChart"></canvas>
-                                </div>
-                            </div>
+                    <div class="chart-container md:max-w-sm">
+                        <canvas id="prevalenceChart"></canvas>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="cycle">
+                <h2 class="text-3xl font-bold text-center text-[#073B4C]">The Vicious Cycle of Chronic Pain</h2>
+                <p class="text-center mt-3 text-slate-600 max-w-2xl mx-auto">Chronic pain creates a self-perpetuating feedback loop where pain, thoughts, feelings, and behaviours constantly influence each other, making the world feel smaller and smaller. The goal of CBT is to find a place to intervene and break this cycle.</p>
+                <div class="mt-12 p-6 md:p-8 bg-white rounded-lg shadow-lg">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 items-center text-center">
+                        <div class="p-4 bg-red-50 border-2 border-dashed border-[#FF6B6B] rounded-lg">
+                            <p class="text-4xl">😟</p>
+                            <h3 class="font-bold mt-2 text-red-800">Pain Sensation</h3>
+                            <p class="text-sm text-red-700">The cycle starts with a real physical sensation.</p>
                         </div>
-                        <div id="triangle-info-panel" class="mt-4 p-4 bg-white rounded-lg shadow-inner min-h-[150px]">
-                            <h4 id="triangle-info-title" class="font-bold text-lg text-olive-700">Click a point to learn more</h4>
-                            <p id="triangle-info-text" class="mt-2 text-gray-600">Our thoughts, feelings, and behaviours are all connected. Changing one can change the others.</p>
+                        <div class="flowchart-arrow hidden lg:block">→</div>
+                        <div class="p-4 bg-yellow-50 border-2 border-dashed border-[#FFD166] rounded-lg">
+                            <p class="text-4xl">🤔</p>
+                            <h3 class="font-bold mt-2 text-yellow-800">Negative Thoughts</h3>
+                            <p class="text-sm text-yellow-700">"This will never end. I can't do anything."</p>
+                        </div>
+                        <div class="flowchart-arrow hidden lg:block">→</div>
+                        <div class="p-4 bg-blue-50 border-2 border-dashed border-[#118AB2] rounded-lg">
+                            <p class="text-4xl">😭</p>
+                            <h3 class="font-bold mt-2 text-blue-800">Distress & Fear</h3>
+                            <p class="text-sm text-blue-700">Feelings of sadness, anxiety, and hopelessness grow.</p>
                         </div>
                     </div>
-                </section>
-
-                <!-- Action Plan Section -->
-                <section id="plan" class="content-section">
-                    <div class="text-center">
-                        <h2 class="text-2xl font-bold mb-2">Your 14-Week Action Plan</h2>
-                        <p class="text-gray-600 max-w-3xl mx-auto">This journey is broken into three phases. Each phase builds on the skills of the last. Click each phase to expand and see the detailed steps. Remember, move at a pace that feels comfortable for your daughter.</p>
+                    <div class="grid grid-cols-1 lg:grid-cols-5 items-center text-center mt-6">
+                         <div class="col-span-1 lg:col-span-3"></div>
+                         <div class="flowchart-arrow transform rotate-90 lg:rotate-0">↓</div>
+                         <div class="col-span-1"></div>
                     </div>
+                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 items-center text-center mt-6">
+                        <div class="p-4 bg-slate-50 border-2 border-dashed border-slate-400 rounded-lg col-start-1 lg:col-start-1">
+                            <p class="text-4xl">📉</p>
+                            <h3 class="font-bold mt-2 text-slate-800">Worsened Pain</h3>
+                            <p class="text-sm text-slate-700">The cycle repeats, strengthening the pain signals.</p>
+                        </div>
+                        <div class="flowchart-arrow hidden lg:block transform rotate-180">→</div>
+                        <div class="p-4 bg-green-50 border-2 border-dashed border-[#06D6A0] rounded-lg">
+                            <p class="text-4xl">🛌</p>
+                            <h3 class="font-bold mt-2 text-green-800">Reduced Activity</h3>
+                            <p class="text-sm text-green-700">Withdrawal from school, friends, and hobbies.</p>
+                        </div>
+                         <div class="flowchart-arrow hidden lg:block transform rotate-180">→</div>
+                         <div class="col-start-1 lg:col-start-4"></div>
+                    </div>
+                </div>
+            </section>
 
-                    <div id="accordion-container" class="mt-8 space-y-4">
-                        <!-- Phase 1 -->
-                        <div class="bg-stone-50 rounded-xl overflow-hidden">
-                            <div class="accordion-header p-5 flex justify-between items-center bg-green-100">
-                                <h3 class="text-lg font-semibold text-green-800">Phase 1: Laying the Groundwork (Weeks 1-3)</h3>
-                                <span class="accordion-icon text-2xl text-green-800 font-bold transform transition-transform duration-300">+</span>
-                            </div>
-                            <div class="accordion-content">
-                                <div class="p-5 border-t border-green-200 space-y-4">
-                                    <div>
-                                        <h4 class="font-bold">1. Collaborative Partnership</h4>
-                                        <p class="text-gray-600">Approach your daughter as a partner. Use phrases like, "I'm here to support you, we're a team in this," and, "The goal is for *you* to feel more in control."</p>
-                                    </div>
-                                    <div>
-                                        <h4 class="font-bold">2. Goal Setting (SMART Goals)</h4>
-                                        <p class="text-gray-600">Focus on functional goals, not pain reduction. Use the SMART format (Specific, Measurable, Achievable, Relevant, Time-bound).<br><strong>Initial Examples:</strong> 1. Get dressed in day clothes every morning. 2. Sit at the dinner table with the family for 15 minutes. 3. Do one 5-minute guided breathing exercise daily.</p>
-                                        <div class="mt-4 p-4 bg-green-50 rounded-lg border border-green-200">
-                                            <h5 class="font-bold text-green-800">✨ AI Goal Suggester</h5>
-                                            <p class="text-sm text-gray-600 mb-2">Stuck for ideas? Get a creative, personalised SMART goal suggestion.</p>
-                                            <button id="suggest-goal-btn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition-colors text-sm">✨ Suggest a Goal</button>
-                                            <div id="goal-suggestion-loader" class="loader" style="display: none;"></div>
-                                            <div id="goal-suggestion-output" class="mt-3 text-gray-700 p-3 bg-white rounded-md" style="display: none;"></div>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <h4 class="font-bold">3. Activity and Mood Monitoring</h4>
-                                        <p class="text-gray-600">Use a daily log to become 'detectives'. Look for patterns between activities, pain, mood, and thoughts. (See Toolkit for a template).</p>
-                                    </div>
-                                    <div>
-                                        <h4 class="font-bold">4. Introducing 'Pacing'</h4>
-                                        <p class="text-gray-600">Avoid the 'boom and bust' cycle. Use time as your guide, not pain. Establish a baseline (e.g., walk for 10 mins), start with 80% of that (8 mins), and stop, even if feeling good. Increase gradually each week.</p>
-                                    </div>
-                                </div>
-                            </div>
+            <section id="pacing">
+                <h2 class="text-3xl font-bold text-center text-[#073B4C]">Breaking the 'Boom & Bust' Cycle</h2>
+                <p class="text-center mt-3 text-slate-600 max-w-2xl mx-auto">A common trap is overdoing it on good days, leading to a crash. Pacing is the skill of using time, not pain, as a guide to slowly and steadily increase activity without causing a flare-up.</p>
+                <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="bg-white rounded-lg shadow-lg p-6">
+                        <h3 class="font-bold text-xl text-[#FF6B6B]">The 'Boom & Bust' Trap</h3>
+                        <p class="mt-2 text-slate-600">Activity levels are erratic. Pushing too hard on a good day (boom) leads to a painful crash (bust), resulting in no consistent progress and increased frustration.</p>
+                        <div class="chart-container mt-4">
+                            <canvas id="boomBustChart"></canvas>
                         </div>
-                        <!-- Phase 2 -->
-                        <div class="bg-stone-50 rounded-xl overflow-hidden">
-                            <div class="accordion-header p-5 flex justify-between items-center bg-yellow-100">
-                                <h3 class="text-lg font-semibold text-yellow-800">Phase 2: Re-engagement and Activation (Weeks 4-8)</h3>
-                                <span class="accordion-icon text-2xl text-yellow-800 font-bold transform transition-transform duration-300">+</span>
-                            </div>
-                            <div class="accordion-content">
-                                <div class="p-5 border-t border-yellow-200 space-y-4">
-                                     <div>
-                                        <h4 class="font-bold">1. Behavioural Activation</h4>
-                                        <p class="text-gray-600">The principle is: action precedes motivation. Engaging in pleasant activities improves mood, which can lessen pain perception.</p>
-                                    </div>
-                                    <div>
-                                        <h4 class="font-bold">2. Create a 'Pleasant Activities Menu'</h4>
-                                        <p class="text-gray-600">Brainstorm a list of activities together, sorted by effort level. (See Toolkit for ideas).</p>
-                                    </div>
-                                    <div>
-                                        <h4 class="font-bold">3. Leverage Her Interests</h4>
-                                        <p class="text-gray-600">Use her passion for shopping and beauty in a structured way. Examples: Schedule 20 mins to 'window shop' for fashion online; use a new beauty product as a reward for hitting a weekly goal; watch a makeup tutorial together.</p>
-                                    </div>
-                                    <div>
-                                        <h4 class="font-bold">4. Addressing School Avoidance</h4>
-                                        <p class="text-gray-600">Create a gradual return plan (e.g., start with just 2 classes). Communicate with the school for an Individual Education Plan (IEP) or other support plan to get accommodations. Teach her anxiety-management skills for school, like belly breathing.</p>
-                                    </div>
-                                </div>
-                            </div>
+                    </div>
+                     <div class="bg-white rounded-lg shadow-lg p-6">
+                        <h3 class="font-bold text-xl text-[#06D6A0]">The Pacing Method</h3>
+                        <p class="mt-2 text-slate-600">Activity is increased in small, planned, and consistent steps. This retrains the body and brain, building stamina and confidence while keeping pain stable.</p>
+                        <div class="chart-container mt-4">
+                            <canvas id="pacingChart"></canvas>
                         </div>
-                        <!-- Phase 3 -->
-                        <div class="bg-stone-50 rounded-xl overflow-hidden">
-                            <div class="accordion-header p-5 flex justify-between items-center bg-red-100">
-                                <h3 class="text-lg font-semibold text-red-800">Phase 3: Cognitive Restructuring (Weeks 9-14)</h3>
-                                <span class="accordion-icon text-2xl text-red-800 font-bold transform transition-transform duration-300">+</span>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="plan">
+                <h2 class="text-3xl font-bold text-center text-[#073B4C]">A 3-Phase Plan for Progress</h2>
+                <p class="text-center mt-3 text-slate-600 max-w-2xl mx-auto">Recovery is a journey, not a single event. This structured plan breaks the process down into manageable phases, each building on the last to create lasting skills and confidence.</p>
+                <div class="mt-12 max-w-2xl mx-auto">
+                    <div class="relative space-y-12">
+                        <div class="absolute left-4 top-4 h-full border-l-4 border-dashed border-[#118AB2]"></div>
+                        <div class="relative pl-12">
+                            <div class="absolute -left-1 top-1 w-6 h-6 bg-[#118AB2] rounded-full"></div>
+                            <span class="bg-[#118AB2] text-white text-sm font-bold px-3 py-1 rounded-full">WEEKS 1-3</span>
+                            <h3 class="text-2xl font-bold mt-3 text-[#073B4C]">Phase 1: Laying the Groundwork</h3>
+                            <p class="mt-2 text-slate-600">Establish a collaborative partnership. Start gathering data with an activity/mood log. Set tiny, achievable functional goals (SMART goals). Introduce the core skill of Pacing.</p>
+                        </div>
+                        <div class="relative pl-12">
+                             <div class="absolute -left-1 top-1 w-6 h-6 bg-[#06D6A0] rounded-full"></div>
+                            <span class="bg-[#06D6A0] text-white text-sm font-bold px-3 py-1 rounded-full">WEEKS 4-8</span>
+                            <h3 class="text-2xl font-bold mt-3 text-[#073B4C]">Phase 2: Behavioural Activation</h3>
+                            <p class="mt-2 text-slate-600">Systematically re-engage with life. Create a 'Pleasant Activities Menu' and schedule them into the day. Leverage passions (like fashion/beauty) and create a gradual plan to return to school.</p>
+                        </div>
+                        <div class="relative pl-12">
+                            <div class="absolute -left-1 top-1 w-6 h-6 bg-[#FF6B6B] rounded-full"></div>
+                            <span class="bg-[#FF6B6B] text-white text-sm font-bold px-3 py-1 rounded-full">WEEKS 9-14</span>
+                            <h3 class="text-2xl font-bold mt-3 text-[#073B4C]">Phase 3: Cognitive Restructuring</h3>
+                            <p class="mt-2 text-slate-600">Learn to identify, challenge, and reframe unhelpful 'Pain Thoughts'. Recognize common 'Thinking Traps' and develop a list of realistic, positive coping statements to use in difficult moments.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="dr-k-insights">
+                <div class="bg-blue-50 border-y-4 border-blue-200 py-12">
+                    <div class="max-w-4xl mx-auto px-4">
+                        <h2 class="text-3xl font-bold text-center text-blue-800">✨ Insights From Dr. K (Healthy Gamer)</h2>
+                        <p class="text-center mt-3 text-blue-700 max-w-2xl mx-auto">Dr. K's philosophy adds a deeper 'why' to CBT's 'how'. These concepts explain the mind-body connection in an intuitive way, providing powerful motivation for healing.</p>
+                        <div class="mt-12 grid grid-cols-1 md:grid-cols-3 gap-8">
+                            <div class="bg-white p-6 rounded-lg shadow-lg text-center border-t-4 border-blue-300">
+                                <p class="text-5xl">🧘‍♀️</p>
+                                <h3 class="text-xl font-bold mt-3 text-[#073B4C]">Pain vs. Suffering</h3>
+                                <p class="mt-2 text-slate-600 text-sm">Pain is a sensation. Suffering is the mental anguish we add on top. By detaching from the *outcome* of being pain-free, we can reduce suffering even when pain is present.</p>
                             </div>
-                            <div class="accordion-content">
-                                <div class="p-5 border-t border-red-200 space-y-4">
-                                    <div>
-                                        <h4 class="font-bold">1. Identify 'Pain Thoughts' (Negative Automatic Thoughts)</h4>
-                                        <p class="text-gray-600">Use the daily logs to spot thinking patterns. Help her label the 'thinking traps', such as: <strong>Catastrophising</strong> ("This pain will never end"), <strong>All-or-Nothing Thinking</strong> ("The day was a write-off because I had to leave early"), and <strong>Mind Reading</strong> ("They think I'm faking it").</p>
-                                    </div>
-                                    <div>
-                                        <h4 class="font-bold">2. Gently Challenge and Reframe</h4>
-                                        <p class="text-gray-600">Be a curious guide, not an arguer. Use questions: "What's the evidence for the thought that you 'can't do anything'?" or "What would you say to your best friend if she said that?"</p>
-                                        <div class="mt-4 p-4 bg-red-50 rounded-lg border border-red-200">
-                                            <h5 class="font-bold text-red-800">✨ AI Thought Reframer</h5>
-                                            <p class="text-sm text-gray-600 mb-2">Enter a negative thought below to get AI-powered suggestions for gentle questions and alternative perspectives.</p>
-                                            <textarea id="thought-input" class="w-full p-2 border border-gray-300 rounded-md" rows="2" placeholder="e.g., 'I'll never get better.'"></textarea>
-                                            <button id="reframe-thought-btn" class="mt-2 bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition-colors text-sm">✨ Help Me Reframe This</button>
-                                            <div id="reframe-loader" class="loader" style="display: none;"></div>
-                                            <div id="reframe-output" class="mt-3 text-gray-700 p-3 bg-white rounded-md" style="display: none;"></div>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <h4 class="font-bold">3. Develop Coping Statements</h4>
-                                        <p class="text-gray-600">Turn more balanced thoughts into short, believable statements she can use when overwhelmed. (See Toolkit for a generator).</p>
-                                    </div>
-                                </div>
+                             <div class="bg-white p-6 rounded-lg shadow-lg text-center border-t-4 border-blue-300">
+                                <p class="text-5xl">📦</p>
+                                <h3 class="text-xl font-bold mt-3 text-[#073B4C]">Samskaras</h3>
+                                <p class="mt-2 text-slate-600 text-sm">Unprocessed emotional experiences can leave "imprints" (Samskaras) that manifest as physical pain. Healing involves acknowledging and 'digesting' these stored emotions.</p>
+                            </div>
+                            <div class="bg-white p-6 rounded-lg shadow-lg text-center border-t-4 border-blue-300">
+                                <p class="text-5xl">🎯</p>
+                                <h3 class="text-xl font-bold mt-3 text-[#073B4C]">Dharma & Dopamine</h3>
+                                <p class="mt-2 text-slate-600 text-sm">Her interests (beauty, fashion) are clues to her purpose (Dharma). Nurturing them builds an identity stronger than pain and helps reset the brain's reward (dopamine) system away from the phone trap.</p>
                             </div>
                         </div>
                     </div>
-                </section>
+                </div>
+            </section>
 
-                <!-- Toolkit Section -->
-                <section id="toolkit" class="content-section">
-                     <div class="text-center">
-                        <h2 class="text-2xl font-bold mb-2">Your Practical Toolkit</h2>
-                        <p class="text-gray-600 max-w-3xl mx-auto">This section contains interactive tools and checklists to use day-to-day. They are quick references to help you and your daughter apply CBT principles consistently.</p>
+            <section id="traps">
+                <h2 class="text-3xl font-bold text-center text-[#073B4C]">Spotting Common Thinking Traps</h2>
+                <p class="text-center mt-3 text-slate-600 max-w-2xl mx-auto">Our minds have mental habits that can fuel the pain cycle. Helping your daughter notice and name these traps is the first step to changing them.</p>
+                <div class="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div class="bg-white p-6 rounded-lg shadow-lg text-center">
+                        <p class="text-5xl">🔮</p>
+                        <h3 class="text-xl font-bold mt-3 text-[#073B4C]">Catastrophizing</h3>
+                        <p class="mt-2 text-slate-600">Assuming the worst possible outcome. <br><em>"This pain will never end. I'll be like this forever."</em></p>
                     </div>
-
-                    <div class="grid md:grid-cols-2 gap-8 mt-8">
-                        <!-- Pleasant Activities Menu -->
-                        <div class="bg-stone-50 p-6 rounded-xl">
-                            <h3 class="font-bold text-xl mb-4">Pleasant Activities Menu</h3>
-                             <p class="text-gray-600 mb-4">Work together to build a list of activities she might find enjoyable. Use the filters below to find an activity that matches her energy level today.</p>
-                            <div id="activity-filters" class="flex flex-wrap gap-2 mb-4">
-                                <button data-filter="all" class="activity-filter-btn bg-green-600 text-white py-1 px-3 rounded-full text-sm">All</button>
-                                <button data-filter="low" class="activity-filter-btn bg-gray-200 text-gray-700 py-1 px-3 rounded-full text-sm">Low-Effort</button>
-                                <button data-filter="medium" class="activity-filter-btn bg-gray-200 text-gray-700 py-1 px-3 rounded-full text-sm">Mid-Effort</button>
-                                <button data-filter="high" class="activity-filter-btn bg-gray-200 text-gray-700 py-1 px-3 rounded-full text-sm">High-Effort</button>
-                            </div>
-                            <div id="activity-list" class="space-y-2 max-h-80 overflow-y-auto pr-2">
-                                <!-- Activity cards will be injected here by JS -->
-                            </div>
-                        </div>
-
-                        <!-- Coping Statements -->
-                        <div class="bg-stone-50 p-6 rounded-xl flex flex-col">
-                            <h3 class="font-bold text-xl mb-4">Coping Statement Generator</h3>
-                            <p class="text-gray-600 mb-4">When negative thoughts creep in, use this tool to generate a realistic and encouraging coping statement. These are the statements you create together.</p>
-                            <div class="flex-grow flex items-center justify-center p-4 bg-white rounded-lg shadow-inner my-4">
-                                <p id="coping-statement" class="text-center text-lg italic text-gray-700">"This feeling is intense, but I know it will pass."</p>
-                            </div>
-                            <button id="new-statement-btn" class="mt-auto w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition-colors">Show New Statement</button>
-                        </div>
-                        
-                         <!-- NEW Dr. K Tool -->
-                        <div class="bg-blue-50 p-6 rounded-xl md:col-span-2 border border-blue-200">
-                            <h3 class="font-bold text-xl mb-2 text-blue-800">✨ Dr. K's 'Notice & Name' Tool</h3>
-                            <p class="text-gray-600 mb-4">Based on mindfulness principles from Healthy Gamer, this exercise helps create distance from overwhelming feelings or sensations. Instead of fighting the feeling, you just notice it and name it. Try this when pain or a difficult emotion feels all-consuming.</p>
-                            <div class="bg-white p-4 rounded-lg shadow-inner">
-                                <p class="font-semibold mb-2">1. Notice the Sensation:</p>
-                                <p class="text-gray-600 mb-4">Guide her to close her eyes and find the sensation in her body. Is it sharp? Dull? Hot? Where is it located?</p>
-                                
-                                <p class="font-semibold mb-2">2. Name It (Without Judgment):</p>
-                                <p class="text-gray-600 mb-4">Help her give it a simple, neutral name. For example: "This is pain." "This is sadness." "This is fear."</p>
-
-                                <p class="font-semibold mb-2">3. Describe It:</p>
-                                <p class="text-gray-600 mb-2">Gently ask her to describe its qualities, as if she were a scientist observing something for the first time. "What colour would it be? What shape? Is it moving or still?"</p>
-                                <input type="text" id="sensation-description" placeholder="e.g., 'A tight, red ball in my stomach'" class="w-full p-2 border border-gray-300 rounded-md">
-
-                                <p class="font-semibold mt-4 mb-2">4. Acknowledge and Let It Be:</p>
-                                <p class="text-gray-600">The final step is to acknowledge it without needing to change it. "Okay, sadness is here right now. It can just be there, and I can still be here too." This practice reduces the struggle against the feeling, which often creates more suffering than the feeling itself.</p>
-                            </div>
-                        </div>
-
-                         <!-- Communication Guide -->
-                        <div class="bg-stone-50 p-6 rounded-xl md:col-span-2">
-                            <h3 class="font-bold text-xl mb-4">Supportive Communication Guide</h3>
-                            <p class="text-gray-600 mb-4">How you talk about pain can either empower or disempower. Use this guide for communication that validates her struggle while gently redirecting towards what she *can* do.</p>
-                            <div class="grid md:grid-cols-2 gap-6">
-                                <div class="bg-red-100 p-4 rounded-lg">
-                                    <h4 class="font-semibold text-red-800 mb-2">❌ Try to Avoid This (Don'ts):</h4>
-                                    <ul class="list-disc list-inside text-red-900 space-y-2">
-                                        <li>"How's your pain today?" (Focuses on pain)</li>
-                                        <li>"You've just got to push through." (Invalidates the struggle)</li>
-                                        <li>"I'm so worried this will never end!" (Adds your fear to hers)</li>
-                                    </ul>
-                                </div>
-                                <div class="bg-green-100 p-4 rounded-lg">
-                                    <h4 class="font-semibold text-green-800 mb-2">✅ Try This Instead (Do's):</h4>
-                                    <ul class="list-disc list-inside text-green-900 space-y-2">
-                                        <li>"What's on your agenda for today?" (Focuses on function)</li>
-                                        <li>"I can see you're having a tough moment. What tool could we use?" (Validates & empowers)</li>
-                                        <li>"You seem scared. I'm here with you." (Offers calm comfort)</li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
+                    <div class="bg-white p-6 rounded-lg shadow-lg text-center">
+                        <p class="text-5xl">🌓</p>
+                        <h3 class="text-xl font-bold mt-3 text-[#073B4C]">All-or-Nothing</h3>
+                        <p class="mt-2 text-slate-600">Seeing things in extremes, with no middle ground. <br><em>"The day was a total failure because my pain flared up."</em></p>
                     </div>
-                </section>
-
-                <!-- Foundations Section -->
-                <section id="foundations" class="content-section">
-                    <div class="text-center">
-                        <h2 class="text-2xl font-bold mb-2">Foundations & Healthy Habits</h2>
-                        <p class="text-gray-600 max-w-3xl mx-auto">Understanding the science behind chronic pain and building healthy habits are the pillars supporting the entire CBT plan. Use this section as your reference library.</p>
+                    <div class="bg-white p-6 rounded-lg shadow-lg text-center">
+                        <p class="text-5xl">🧠</p>
+                        <h3 class="text-xl font-bold mt-3 text-[#073B4C]">Mind Reading</h3>
+                        <p class="mt-2 text-slate-600">Assuming you know what others are thinking negatively about you. <br><em>"They all think I'm just being lazy."</em></p>
                     </div>
+                </div>
+            </section>
 
-                    <div class="grid md:grid-cols-2 gap-8 mt-8">
-                        <div class="bg-stone-50 p-6 rounded-xl">
-                            <h3 class="font-bold text-xl mb-4">🧠 The Science of Chronic Pain</h3>
-                            <p class="text-gray-600 mb-4">It's vital to understand that chronic pain isn't "imagined". It's a faulty alarm signal in the nervous system. The brain becomes hypersensitive (central sensitisation) and misinterprets normal signals as threatening.</p>
-                            <h4 class="font-semibold mt-4">The Biopsychosocial Model</h4>
-                            <ul class="list-disc list-inside text-gray-600 space-y-1 mt-2">
-                                <li><strong>Bio:</strong> The state of the nervous system.</li>
-                                <li><strong>Psycho:</strong> Thoughts (catastrophising), emotions (anxiety), and coping skills.</li>
-                                <li><strong>Social:</strong> Family dynamics, friends, school environment.</li>
-                            </ul>
-                            <p class="text-gray-600 mt-4">The goal of CBT is to calm the stress response and retrain the brain to turn down the volume on the pain alarm.</p>
-                        </div>
-                        <div class="bg-stone-50 p-6 rounded-xl">
-                            <h3 class="font-bold text-xl mb-4">😴 Sleep Hygiene Checklist</h3>
-                            <p class="text-gray-600 mb-4">Time in bed doesn't equal quality sleep. The goal is to strengthen the brain-bed-sleep connection.</p>
-                            <ul class="space-y-2 text-gray-700">
-                                <li class="flex items-start"><span class="mr-2 text-green-600">✓</span> <strong>Consistent wake-up time:</strong> Even on weekends.</li>
-                                <li class="flex items-start"><span class="mr-2 text-green-600">✓</span> <strong>Bed is for sleep only:</strong> No phone, no homework in bed.</li>
-                                <li class="flex items-start"><span class="mr-2 text-green-600">✓</span> <strong>Electronics curfew:</strong> No screens 30-60 mins before bed.</li>
-                                <li class="flex items-start"><span class="mr-2 text-green-600">✓</span> <strong>Wind-down routine:</strong> Reading, calm music, etc.</li>
-                                <li class="flex items-start"><span class="mr-2 text-green-600">✓</span> <strong>The 20-minute rule:</strong> If not asleep, get up, do something boring, and return when sleepy.</li>
-                            </ul>
-                        </div>
-                         <div class="bg-stone-50 p-6 rounded-xl">
-                            <h3 class="font-bold text-xl mb-4">🍎 Gentle Nutrition Strategies</h3>
-                            <p class="text-gray-600 mb-4">A confrontational approach to food will fail. Focus on *adding* nutritious options rather than banning her favourites. The key is collaboration and moderation.</p>
-                             <ul class="list-disc list-inside text-gray-600 space-y-1 mt-2">
-                                <li><strong>Involve Her:</strong> Let her help plan meals and cook.</li>
-                                <li><strong>Lead by Example:</strong> Eat healthy family meals together.</li>
-                                <li><strong>Add, Don't Subtract:</strong> Add a side salad to pizza night.</li>
-                            </ul>
-                        </div>
-                        <!-- NEW Dr. K Section -->
-                        <div class="bg-blue-50 p-6 rounded-xl border border-blue-200">
-                            <h3 class="font-bold text-xl mb-2 text-blue-800">✨ Insights from Dr. K (Healthy Gamer)</h3>
-                            <p class="text-gray-600 mb-4">These concepts, adapted from Dr. K's work, can add a deeper layer of understanding to the CBT framework.</p>
-                            
-                            <h4 class="font-semibold text-blue-900">The Mind-Body Connection (Samskaras)</h4>
-                            <p class="text-gray-600 mb-3">Dr. K explains that unprocessed emotional experiences can create "imprints" or "grooves" in our mind, which he calls Samskaras. These can manifest physically. It's possible that some of your daughter's pain is the body holding onto difficult emotions she hasn't been able to process. This doesn't mean the pain isn't real; it means the mind and body are deeply connected. Healing involves gently acknowledging these stored emotions, not just treating the physical sensation.</p>
+        </main>
 
-                            <h4 class="font-semibold text-blue-900">The Dopamine Trap: Phone Use & Motivation</h4>
-                            <p class="text-gray-600 mb-3">Your daughter's phone provides an endless stream of easy, high-reward dopamine hits (the "feel-good" chemical). Real-world activities, like homework or even socialising, require more effort for less immediate reward. Her brain, seeking efficiency, will naturally prefer the phone. This isn't a moral failing; it's brain chemistry. A "dopamine detox"—consciously reducing high-dopamine activities like phone use—can help "reset" the brain's reward system, making real-world activities feel more engaging again.</p>
-                            
-                            <h4 class="font-semibold text-blue-900">Discovering 'Dharma' (Purpose)</h4>
-                            <p class="text-gray-600">Chronic pain can shrink a person's identity to just "being a patient." Dr. K talks about the importance of 'Dharma'—one's purpose or nature. Your daughter's interest in fashion and beauty isn't just a distraction; it's a clue to her Dharma. It's a place where she can be creative, skillful, and feel like herself. The goal is to nurture this. Helping her explore these interests (e.g., a short course in makeup artistry, starting a fashion blog) can help her build an identity that is stronger than her pain.</p>
-                        </div>
-                    </div>
-                </section>
-            </main>
-        </div>
-
-        <footer class="text-center mt-8 text-sm text-gray-500">
-            <p>This guide is for informational purposes and does not replace professional medical or psychological advice. Always consult a qualified health provider for diagnosis and treatment.</p>
+        <footer class="text-center mt-20 border-t pt-8">
+            <p class="text-slate-600">This infographic is for educational purposes and is not a substitute for professional medical advice. Always consult with a qualified health provider for diagnosis and treatment.</p>
         </footer>
 
     </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    const tabs = document.querySelectorAll('.tab-button');
-    const tabContent = document.querySelectorAll('.content-section');
-    
-    // API calling function
-    async function callGemini(prompt, responseElement, loaderElement) {
-        loaderElement.style.display = 'block';
-        responseElement.style.display = 'none';
+    document.addEventListener('DOMContentLoaded', () => {
+
+        const palette = {
+            red: '#FF6B6B',
+            yellow: '#FFD166',
+            green: '#06D6A0',
+            blue: '#118AB2',
+            darkBlue: '#073B4C'
+        };
+
+        const tooltipTitleCallback = (context) => {
+            const item = context[0];
+            let label = item.chart.data.labels[item.dataIndex];
+            if (Array.isArray(label)) {
+                return label.join(' ');
+            }
+            return label;
+        };
         
-        let chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
-        const payload = { contents: chatHistory };
-        const apiKey = "AIzaSyCDOz0vNgCq-rpHh68EzGEusnUubGxSjJc";
-        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-
-        try {
-            const response = await fetch(apiUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-
-            if (!response.ok) {
-                 throw new Error(`API call failed with status: ${response.status}`);
-            }
-
-            const result = await response.json();
-            
-            if (result.candidates && result.candidates.length > 0 &&
-                result.candidates[0].content && result.candidates[0].content.parts &&
-                result.candidates[0].content.parts.length > 0) {
-                const text = result.candidates[0].content.parts[0].text;
-                responseElement.innerHTML = text.replace(/\n/g, '<br>'); // Basic formatting
-            } else {
-                responseElement.innerText = 'Sorry, I could not get a suggestion. Please try again.';
-                console.error('Unexpected API response structure:', result);
-            }
-        } catch (error) {
-            console.error('Error calling Gemini API:', error);
-            responseElement.innerText = 'An error occurred. Please check the console and try again.';
-        } finally {
-            loaderElement.style.display = 'none';
-            responseElement.style.display = 'block';
-        }
-    }
-
-    // AI Goal Suggester
-    const suggestGoalBtn = document.getElementById('suggest-goal-btn');
-    const goalSuggestionOutput = document.getElementById('goal-suggestion-output');
-    const goalLoader = document.getElementById('goal-suggestion-loader');
-
-    if(suggestGoalBtn) {
-        suggestGoalBtn.addEventListener('click', () => {
-            const prompt = `
-                As a CBT expert coaching a parent, create one specific, small, and creative SMART goal for a 15-year-old girl in Australia who is dealing with chronic pain and low mood, but is interested in fashion and beauty products.
-                The goal must be a functional goal, not a pain-reduction goal.
-                Format the output clearly with headings for each SMART component (Specific, Measurable, Achievable, Relevant, Time-bound). Do not use markdown.
-            `;
-            callGemini(prompt, goalSuggestionOutput, goalLoader);
-        });
-    }
-
-    // AI Thought Reframer
-    const reframeThoughtBtn = document.getElementById('reframe-thought-btn');
-    const thoughtInput = document.getElementById('thought-input');
-    const reframeOutput = document.getElementById('reframe-output');
-    const reframeLoader = document.getElementById('reframe-loader');
-
-    if(reframeThoughtBtn) {
-        reframeThoughtBtn.addEventListener('click', () => {
-            const thought = thoughtInput.value;
-            if (!thought.trim()) {
-                reframeOutput.innerText = 'Please enter a thought to reframe.';
-                reframeOutput.style.display = 'block';
-                return;
-            }
-
-            const prompt = `
-                Act as a compassionate CBT therapist coaching a parent. The parent's 15-year-old daughter expressed the following negative thought: "${thought}".
-                Provide the parent with:
-                1. Two gentle, non-confrontational questions to help her challenge this thought.
-                2. Two alternative, more balanced ways to look at the situation.
-                Frame your response in a supportive and encouraging tone for the parent to use. Do not use markdown. Start the response with "Here are a few ways you could gently explore that thought with her:".
-            `;
-            callGemini(prompt, reframeOutput, reframeLoader);
-        });
-    }
-
-
-    // --- Existing Functionality ---
-    tabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-            const target = tab.dataset.tab;
-
-            tabs.forEach(t => {
-                t.classList.remove('tab-active');
-                t.classList.add('tab-inactive');
-            });
-
-            tab.classList.add('tab-active');
-            tab.classList.remove('tab-inactive');
-
-            tabContent.forEach(content => {
-                content.classList.remove('active');
-                if (content.id === target) {
-                    content.classList.add('active');
-                }
-            });
-        });
-    });
-
-    const accordions = document.querySelectorAll('.accordion-header');
-    accordions.forEach(accordion => {
-        accordion.addEventListener('click', () => {
-            const content = accordion.nextElementSibling;
-            const icon = accordion.querySelector('.accordion-icon');
-            const isOpen = content.style.maxHeight;
-
-            // This ensures only one accordion is open at a time.
-            if (!isOpen) {
-                 accordions.forEach(otherAccordion => {
-                    if (otherAccordion !== accordion) {
-                        otherAccordion.nextElementSibling.style.maxHeight = null;
-                        otherAccordion.querySelector('.accordion-icon').style.transform = 'rotate(0deg)';
-                     }
-                });
-            }
-
-            if (isOpen) {
-                content.style.maxHeight = null;
-                icon.style.transform = 'rotate(0deg)';
-            } else {
-                content.style.maxHeight = content.scrollHeight + "px";
-                icon.style.transform = 'rotate(45deg)';
-            }
-        });
-    });
-
-    const activities = [
-        { name: "Listen to a favourite album or podcast", category: "low" },
-        { name: "Watch a 10-minute funny YouTube video", category: "low" },
-        { name: "Do a 5-minute guided meditation exercise", category: "low" },
-        { name: "Browse a fashion or beauty website for 15 minutes", category: "low" },
-        { name: "Do a simple digital drawing on a tablet", category: "low" },
-        { name: "Do a 15-minute makeup look", category: "medium" },
-        { name: "Make a simple snack (e.g., smoothie, toast)", category: "medium" },
-        { name: "Create a vision board with magazines", category: "medium" },
-        { name: "Play a card game with Mum or brother", category: "medium" },
-        { name: "Watch an episode of a favourite show with the family", category: "medium" },
-        { name: "Go for a 20-minute walk outside", category: "high" },
-        { name: "Go to one specific shop (e.g., Mecca, Target)", category: "high" },
-        { name: "Meet a friend for 30 minutes at a local cafe", category: "high" },
-        { name: "Go to the library to pick out a book", category: "high" },
-        { name: "Help with the grocery shopping", category: "high" },
-        { name: "Attend one class at school", category: "high" }
-    ];
-
-    const activityList = document.getElementById('activity-list');
-    const filterButtons = document.querySelectorAll('.activity-filter-btn');
-
-    function displayActivities(filter) {
-        if (!activityList) return;
-        activityList.innerHTML = '';
-        const filteredActivities = filter === 'all' ? activities : activities.filter(a => a.category === filter);
-
-        if (filteredActivities.length === 0) {
-            activityList.innerHTML = `<p class="text-gray-500">No activities found.</p>`;
-            return;
-        }
-
-        filteredActivities.forEach(activity => {
-            const div = document.createElement('div');
-            div.className = 'activity-card bg-white p-3 rounded-lg shadow-sm';
-            div.textContent = activity.name;
-            activityList.appendChild(div);
-        });
-    }
-
-    if(filterButtons.length > 0) {
-        filterButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                const filter = button.dataset.filter;
-                filterButtons.forEach(btn => {
-                    btn.classList.remove('bg-green-600', 'text-white');
-                    btn.classList.add('bg-gray-200', 'text-gray-700');
-                });
-                button.classList.add('bg-green-600', 'text-white');
-                button.classList.remove('bg-gray-200', 'text-gray-700');
-                displayActivities(filter);
-            });
-        });
-        displayActivities('all');
-    }
-    
-
-    const copingStatements = [
-        "This feeling is intense, but I know it will pass.",
-        "Hurt doesn't equal harm. It's safe for me to move gently.",
-        "I'm doing the best I can right now, and that's enough.",
-        "I can't control the pain, but I can control my response to it.",
-        "This is tough, but I'm stronger than I think.",
-        "Even with pain, I can still do things that matter to me.",
-        "One step at a time. All I have to do is get through the next 10 minutes."
-    ];
-
-    const statementEl = document.getElementById('coping-statement');
-    const newStatementBtn = document.getElementById('new-statement-btn');
-
-    if(newStatementBtn) {
-        newStatementBtn.addEventListener('click', () => {
-            const randomIndex = Math.floor(Math.random() * copingStatements.length);
-            let newStatement = copingStatements[randomIndex];
-            while (newStatement === statementEl.textContent) {
-                 const newIndex = Math.floor(Math.random() * copingStatements.length);
-                 newStatement = copingStatements[newIndex];
-            }
-            statementEl.textContent = newStatement;
-        });
-    }
-
-    const triangleInfo = {
-        thought: {
-            title: "🤔 Thoughts (Cognitions)",
-            text: "These are the words and images that run through our mind. Negative thoughts like 'This pain will never get better' can trigger feelings of hopelessness and behaviours of avoidance."
-        },
-        feeling: {
-            title: "😟 Feelings (Emotions & Sensations)",
-            text: "This includes emotions (sadness, anxiety) and physical sensations (pain, tension). Negative feelings can physically amplify pain perception, turning up the 'volume' on the brain's pain signal."
-        },
-        behavior: {
-            title: "🛌 Behaviours (Actions)",
-            text: "These are the things we do or avoid doing. Behaviours like staying in bed or avoiding school can lead to deconditioning and isolation, which reinforces negative thoughts and feelings."
-        }
-    };
-
-    const trianglePoints = document.querySelectorAll('.triangle-point');
-    const infoTitle = document.getElementById('triangle-info-title');
-    const infoText = document.getElementById('triangle-info-text');
-
-    if(trianglePoints.length > 0) {
-        trianglePoints.forEach(point => {
-            point.addEventListener('click', () => {
-                const contentKey = point.dataset.content;
-                
-                trianglePoints.forEach(p => p.classList.remove('active'));
-                point.classList.add('active');
-
-                infoTitle.textContent = triangleInfo[contentKey].title;
-                infoText.textContent = triangleInfo[contentKey].text;
-            });
-        });
-    }
-    
-
-    const ctx = document.getElementById('painTriangleChart')?.getContext('2d');
-    if (ctx) {
-        const painTriangleChart = new Chart(ctx, {
-            type: 'polarArea',
-            data: {
-                labels: ['Thoughts', 'Feelings', 'Behaviours'],
-                datasets: [{
-                    data: [10, 10, 10],
-                    backgroundColor: [
-                        'rgba(107, 142, 35, 0.5)', 
-                        'rgba(255, 99, 132, 0.5)',
-                        'rgba(54, 162, 235, 0.5)'
-                    ],
-                    borderColor: [
-                        'rgba(107, 142, 35, 1)',
-                        'rgba(255, 99, 132, 1)',
-                        'rgba(54, 162, 235, 1)'
-                    ],
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    r: {
-                        display: false
+        const chartDefaultOptions = {
+             plugins: {
+                tooltip: {
+                    callbacks: {
+                        title: tooltipTitleCallback
                     }
                 },
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: {
-                            font: {
-                                size: 14
+                legend: {
+                    display: false
+                }
+            }
+        };
+
+        const prevalenceCtx = document.getElementById('prevalenceChart');
+        if (prevalenceCtx) {
+            new Chart(prevalenceCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Adolescents with Chronic Pain', 'Unaffected Adolescents'],
+                    datasets: [{
+                        label: '% of Adolescents',
+                        data: [25, 75], // Using an average of 25% for visualization
+                        backgroundColor: [palette.red, '#e2e8f0'],
+                        borderColor: ['#ffffff'],
+                        borderWidth: 4,
+                        hoverOffset: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: palette.darkBlue,
+                                font: {
+                                    size: 14,
+                                    weight: '600'
+                                }
                             }
-                        }
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                return `${context.label}: An interconnected part of the pain cycle.`;
-                            }
+                        },
+                        tooltip: {
+                           callbacks: {
+                                title: tooltipTitleCallback
+                           }
                         }
                     }
                 }
-            }
-        });
-    }
-});
+            });
+        }
+
+        const commonLineOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Activity / Energy Level'
+                    }
+                },
+                x: {
+                     title: {
+                        display: true,
+                        text: 'Time (Days)'
+                    }
+                }
+            },
+            ...chartDefaultOptions
+        };
+
+        const boomBustCtx = document.getElementById('boomBustChart');
+        if (boomBustCtx) {
+            new Chart(boomBustCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 6', 'Day 7'],
+                    datasets: [{
+                        label: 'Activity Level',
+                        data: [2, 8, 3, 9, 2, 7, 3],
+                        borderColor: palette.red,
+                        backgroundColor: 'rgba(255, 107, 107, 0.2)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: commonLineOptions
+            });
+        }
+        
+        const pacingCtx = document.getElementById('pacingChart');
+        if (pacingCtx) {
+            new Chart(pacingCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 6', 'Day 7'],
+                    datasets: [{
+                        label: 'Activity Level',
+                        data: [2, 2.5, 3, 3.5, 4, 4.5, 5],
+                        borderColor: palette.green,
+                        backgroundColor: 'rgba(6, 214, 160, 0.2)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: commonLineOptions
+            });
+        }
+    });
 </script>
 
 </body>
