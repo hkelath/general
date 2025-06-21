@@ -10,12 +10,12 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     
-    <!-- Chosen Palette: Energetic & Playful (Modified) -->
-    <!-- Application Structure Plan: A top-to-bottom, single-page scrolling infographic telling a narrative story. It starts with a hook (prevalence statistic), defines the core problem (the Vicious Cycle), introduces the solution (Pacing vs. Boom/Bust and the 3-Phase Plan), incorporates Dr. K's unique wisdom in a distinct section (Dharma, Samskaras, Dopamine), details key skills (Thinking Traps), and concludes with the parent's role. This linear narrative is ideal for an infographic, guiding the user logically through a complex topic. -->
+    <!-- Chosen Palette: Energetic & Playful -->
+    <!-- Application Structure Plan: A top-to-bottom, single-page scrolling infographic telling a narrative story. It starts with a hook (prevalence statistic), defines the core problem (the Vicious Cycle), introduces the solution (Pacing vs. Boom/Bust and the 3-Phase Plan), incorporates Dr. K's unique wisdom in a distinct section (Dharma, Samskaras, Dopamine), details key skills (Thinking Traps), and concludes with the parent's role. This linear, narrative structure is ideal for an infographic format, guiding the user logically through a complex topic. -->
     <!-- Visualization & Content Choices: 
-        - Teen Pain Prevalence (11-38% Statistic): Goal: Inform -> Viz: Donut Chart -> Justification: Grabs attention and establishes the scale of the problem. -> Method: Chart.js/Canvas.
-        - The Vicious Cycle of Pain: Goal: Organize (Process) -> Viz: HTML/CSS Flowchart -> Justification: Visually demonstrates the feedback loop described in the text. Adheres to NO SVG/Mermaid constraint. -> Method: HTML/CSS with Tailwind.
-        - Pacing vs. Boom/Bust Cycle: Goal: Compare/Change -> Viz: Two side-by-side Line Charts -> Justification: Provides a stark visual contrast between the maladaptive cycle and the recommended pacing strategy. -> Method: Chart.js/Canvas.
+        - Teen Pain Prevalence (11-38% Statistic): Goal: Inform -> Viz: Donut Chart -> Justification: Immediately grabs attention and establishes the scale of the problem. -> Method: Chart.js/Canvas.
+        - The Vicious Cycle of Pain: Goal: Organize (Process) -> Viz: HTML/CSS Flowchart -> Justification: Visually demonstrates the feedback loop described in the text, a core concept. Adheres to NO SVG/Mermaid constraint. -> Method: HTML/CSS with Tailwind.
+        - Pacing vs. Boom/Bust Cycle: Goal: Compare/Change -> Viz: Two side-by-side Line Charts -> Justification: Provides a stark, easily understood visual contrast between the maladaptive cycle and the recommended pacing strategy. -> Method: Chart.js/Canvas.
         - CBT 3-Phase Plan: Goal: Organize (Process) -> Viz: Vertical Timeline -> Justification: Breaks the plan into a clear, chronological, and non-overwhelming roadmap. -> Method: HTML/CSS with Tailwind.
         - Dr. K's Concepts & Thinking Traps: Goal: Organize (Groupings) -> Viz: Icon-based Info Cards -> Justification: Presents abstract concepts as distinct, memorable, and visually appealing items. -> Method: HTML/CSS with Tailwind.
     -->
@@ -46,7 +46,7 @@
                     <div class="bg-white rounded-lg shadow-lg p-6">
                         <h3 class="font-bold text-2xl text-[#118AB2]">A Widespread Challenge</h3>
                         <p class="mt-4 text-slate-600">Research shows that chronic pain is surprisingly common in adolescents, affecting a significant portion of the population. This isn't a rare condition, but a widespread health issue that impacts school, social life, and mental well-being for many.</p>
-                        <p class="mt-4 text-5xl font-bold text-[#FF6B6B]">11% to 38%</p>
+                        <p class="mt-4 text-5xl font-bold text-[#EF476F]">11% to 38%</p>
                         <p class="mt-2 font-semibold text-slate-700">of children and adolescents experience chronic pain.</p>
                     </div>
                     <div class="chart-container md:max-w-sm">
@@ -60,7 +60,7 @@
                 <p class="text-center mt-3 text-slate-600 max-w-2xl mx-auto">Chronic pain creates a self-perpetuating feedback loop where pain, thoughts, feelings, and behaviours constantly influence each other, making the world feel smaller and smaller. The goal of CBT is to find a place to intervene and break this cycle.</p>
                 <div class="mt-12 p-6 md:p-8 bg-white rounded-lg shadow-lg">
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 items-center text-center">
-                        <div class="p-4 bg-red-50 border-2 border-dashed border-[#FF6B6B] rounded-lg">
+                        <div class="p-4 bg-red-50 border-2 border-dashed border-[#EF476F] rounded-lg">
                             <p class="text-4xl">😟</p>
                             <h3 class="font-bold mt-2 text-red-800">Pain Sensation</h3>
                             <p class="text-sm text-red-700">The cycle starts with a real physical sensation.</p>
@@ -106,7 +106,7 @@
                 <p class="text-center mt-3 text-slate-600 max-w-2xl mx-auto">A common trap is overdoing it on good days, leading to a crash. Pacing is the skill of using time, not pain, as a guide to slowly and steadily increase activity without causing a flare-up.</p>
                 <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div class="bg-white rounded-lg shadow-lg p-6">
-                        <h3 class="font-bold text-xl text-[#FF6B6B]">The 'Boom & Bust' Trap</h3>
+                        <h3 class="font-bold text-xl text-[#EF476F]">The 'Boom & Bust' Trap</h3>
                         <p class="mt-2 text-slate-600">Activity levels are erratic. Pushing too hard on a good day (boom) leads to a painful crash (bust), resulting in no consistent progress and increased frustration.</p>
                         <div class="chart-container mt-4">
                             <canvas id="boomBustChart"></canvas>
@@ -141,8 +141,8 @@
                             <p class="mt-2 text-slate-600">Systematically re-engage with life. Create a 'Pleasant Activities Menu' and schedule them into the day. Leverage passions (like fashion/beauty) and create a gradual plan to return to school.</p>
                         </div>
                         <div class="relative pl-12">
-                            <div class="absolute -left-1 top-1 w-6 h-6 bg-[#FF6B6B] rounded-full"></div>
-                            <span class="bg-[#FF6B6B] text-white text-sm font-bold px-3 py-1 rounded-full">WEEKS 9-14</span>
+                            <div class="absolute -left-1 top-1 w-6 h-6 bg-[#EF476F] rounded-full"></div>
+                            <span class="bg-[#EF476F] text-white text-sm font-bold px-3 py-1 rounded-full">WEEKS 9-14</span>
                             <h3 class="text-2xl font-bold mt-3 text-[#073B4C]">Phase 3: Cognitive Restructuring</h3>
                             <p class="mt-2 text-slate-600">Learn to identify, challenge, and reframe unhelpful 'Pain Thoughts'. Recognize common 'Thinking Traps' and develop a list of realistic, positive coping statements to use in difficult moments.</p>
                         </div>
@@ -210,7 +210,7 @@
     document.addEventListener('DOMContentLoaded', () => {
 
         const palette = {
-            red: '#FF6B6B',
+            red: '#EF476F',
             yellow: '#FFD166',
             green: '#06D6A0',
             blue: '#118AB2',
@@ -310,7 +310,7 @@
                         label: 'Activity Level',
                         data: [2, 8, 3, 9, 2, 7, 3],
                         borderColor: palette.red,
-                        backgroundColor: 'rgba(255, 107, 107, 0.2)',
+                        backgroundColor: 'rgba(239, 71, 111, 0.2)',
                         fill: true,
                         tension: 0.4
                     }]
