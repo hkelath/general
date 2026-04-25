@@ -1,7 +1,7 @@
 {
-  "name": "gsi-opportunity-analyzer-claude",
-  "version": "1.0.0",
-  "description": "GSI Opportunity Analyzer powered by Claude AI and Common Room",
+  "name": "hcltech-sales-intelligence",
+  "version": "2.0.0",
+  "description": "HCLTech Sales Intelligence — powered by Claude AI, Tavily & Apollo.io",
   "type": "module",
   "main": "server.js",
   "scripts": {
@@ -11,6 +11,7 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",
     "dotenv": "^16.4.5",
+    "exceljs": "^4.4.0",
     "express": "^4.21.2"
   }
 }
