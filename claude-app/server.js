@@ -246,6 +246,20 @@ Keywords: ${r.apollo.keywords?.join(', ') || 'N/A'}`);
     return parts.join('\n\n') || 'No research data available.';
 }
 
+// ── JSON repair helper ────────────────────────────────────────────────────────
+function countUnclosed(s) {
+    let depth = 0, inStr = false, esc = false;
+    for (const ch of s) {
+        if (esc) { esc = false; continue; }
+        if (ch === '\\' && inStr) { esc = true; continue; }
+        if (ch === '"') { inStr = !inStr; continue; }
+        if (inStr) continue;
+        if (ch === '{' || ch === '[') depth++;
+        else if (ch === '}' || ch === ']') depth--;
+    }
+    return Math.max(depth * 2, 0); // each unclosed level needs 2 chars: ]}
+}
+
 // ── SSE helper ────────────────────────────────────────────────────────────────
 function sendEvent(res, event, data) {
     res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
@@ -314,7 +328,7 @@ app.post('/api/analyze', async (req, res) => {
                 const callClaude = async (prompt) => {
                     const stream = await anthropic.messages.stream({
                         model: 'claude-opus-4-7',
-                        max_tokens: 3500,
+                        max_tokens: 8000,
                         thinking: { type: 'adaptive' },
                         system: [{ type: 'text', text: SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } }],
                         messages: [{ role: 'user', content: prompt }],
@@ -399,7 +413,18 @@ Return ONLY the JSON object.`;
                     }
                     const raw = message.content.filter(b => b.type === 'text').map(b => b.text).join('');
                     const match = raw.match(/\{[\s\S]*\}/);
-                    result = JSON.parse(match ? match[0] : raw);
+                    const jsonStr = match ? match[0] : raw;
+                    try {
+                        result = JSON.parse(jsonStr);
+                    } catch {
+                        // Truncated JSON — close any open arrays/objects and retry parse
+                        const repaired = jsonStr
+                            .replace(/,\s*$/, '')           // trailing comma
+                            .replace(/"\s*$/, '"')           // unclosed string → close it
+                            + ']}]}]}]}]}]}]}]}]}]}]}]}'     // close nested arrays/objects
+                                .slice(0, countUnclosed(jsonStr));
+                        result = JSON.parse(repaired);
+                    }
                 } catch (err) {
                     result = {
                         orgName,
