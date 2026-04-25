@@ -1,344 +1,1400 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang="en" class="h-full bg-gray-900">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CBT & Dr. K for Teen Pain: A Parent's Visual Guide</title>
+    <title>GSI Opportunity Analyzer</title>
+    <!-- Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Load Inter font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    
-    <!-- Chosen Palette: Energetic & Playful -->
-    <!-- Application Structure Plan: A top-to-bottom, single-page scrolling infographic telling a narrative story. It starts with a hook (prevalence statistic), defines the core problem (the Vicious Cycle), introduces the solution (Pacing vs. Boom/Bust and the 3-Phase Plan), incorporates Dr. K's unique wisdom in a distinct section (Dharma, Samskaras, Dopamine), details key skills (Thinking Traps), and concludes with the parent's role. This linear, narrative structure is ideal for an infographic format, guiding the user logically through a complex topic. -->
-    <!-- Visualization & Content Choices: 
-        - Teen Pain Prevalence (11-38% Statistic): Goal: Inform -> Viz: Donut Chart -> Justification: Immediately grabs attention and establishes the scale of the problem. -> Method: Chart.js/Canvas.
-        - The Vicious Cycle of Pain: Goal: Organize (Process) -> Viz: HTML/CSS Flowchart -> Justification: Visually demonstrates the feedback loop described in the text, a core concept. Adheres to NO SVG/Mermaid constraint. -> Method: HTML/CSS with Tailwind.
-        - Pacing vs. Boom/Bust Cycle: Goal: Compare/Change -> Viz: Two side-by-side Line Charts -> Justification: Provides a stark, easily understood visual contrast between the maladaptive cycle and the recommended pacing strategy. -> Method: Chart.js/Canvas.
-        - CBT 3-Phase Plan: Goal: Organize (Process) -> Viz: Vertical Timeline -> Justification: Breaks the plan into a clear, chronological, and non-overwhelming roadmap. -> Method: HTML/CSS with Tailwind.
-        - Dr. K's Concepts & Thinking Traps: Goal: Organize (Groupings) -> Viz: Icon-based Info Cards -> Justification: Presents abstract concepts as distinct, memorable, and visually appealing items. -> Method: HTML/CSS with Tailwind.
-    -->
-    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
-
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
-        .chart-container { position: relative; width: 100%; max-width: 400px; margin-left: auto; margin-right: auto; height: 300px; max-height: 400px; }
-        @media (min-width: 768px) { .chart-container { height: 350px; } }
-        .flowchart-arrow { color: #118AB2; font-weight: bold; font-size: 1.5rem; line-height: 1; }
+        /* Custom styles */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        /* Custom spinner */
+        .spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid #4B5563; /* gray-600 */
+            border-bottom-color: #3B82F6; /* blue-500 */
+            border-radius: 50%;
+            display: inline-block;
+            box-sizing: border-box;
+            animation: rotation 1s linear infinite;
+        }
+
+        @keyframes rotation {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+        
+        /* Custom scrollbar for textareas */
+        textarea::-webkit-scrollbar {
+            width: 8px;
+        }
+        textarea::-webkit-scrollbar-track {
+            background: #374151; /* gray-700 */
+            border-radius: 4px;
+        }
+        textarea::-webkit-scrollbar-thumb {
+            background: #6B7280; /* gray-500 */
+            border-radius: 4px;
+        }
+        textarea::-webkit-scrollbar-thumb:hover {
+            background: #9CA3AF; /* gray-400 */
+        }
+        
+        /* Ensure select dropdowns show text in dark mode */
+        select {
+            color: white;
+        }
+        select option {
+            background: #374151; /* gray-700 */
+            color: white;
+        }
+        
+        /* Custom styles for select with 'None' selected */
+        select:invalid {
+            color: #9CA3AF; /* gray-400 */
+        }
+        
+        /* Table cell alignment */
+        #resultsTable tbody td {
+            vertical-align: top;
+        }
+        
+        /* Ensure modal close button is styled correctly */
+        .modal-close-button {
+            font-size: 1.5rem;
+            line-height: 1.5rem;
+            padding: 0.5rem;
+            margin-top: -0.5rem;
+            margin-right: -0.5rem;
+        }
+        
+        /* Custom padding for select */
+        select.custom-select {
+            padding-right: 2.5rem;
+        }
+
+        /* Tab styles */
+        .tab-button {
+            transition: all 0.3s ease;
+        }
+        .tab-button.active {
+            color: #60A5FA; /* blue-400 */
+            border-color: #60A5FA; /* blue-400 */
+        }
+        .tab-button:not(.active) {
+            color: #9CA3AF; /* gray-400 */
+            border-color: transparent;
+        }
+         .tab-button:not(.active):hover {
+            color: #D1D5DB; /* gray-300 */
+            border-color: #4B5563; /* gray-600 */
+        }
+
     </style>
 </head>
-<body class="text-slate-800">
-
-    <div class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
-
-        <header class="text-center my-12">
-            <h1 class="text-4xl md:text-5xl font-bold text-[#073B4C]">A Visual Guide to Helping Your Teen Thrive With Chronic Pain</h1>
-            <p class="mt-4 text-lg text-slate-600 max-w-3xl mx-auto">An integrative approach combining Cognitive Behavioral Therapy (CBT) with insights from Dr. K of Healthy Gamer.</p>
+<body class="h-full text-gray-100">
+    <div class="flex flex-col min-h-screen p-4 md:p-8">
+        
+        <!-- Header -->
+        <header class="mb-6 flex flex-col md:flex-row justify-between items-center gap-4">
+            <!-- Left Side: Logo and Title -->
+            <div class="flex items-center gap-4">
+                <img src="https://www.hcltech.com/themes/custom/hcltech/images/hcltech-new-logo.svg" alt="HCLTech Logo" class="h-8 md:h-10">
+                <span class="text-lg md:text-xl font-medium text-gray-300">Digital Business Services</span>
+            </div>
+            
+            <!-- Right Side: App Name + Settings -->
+            <div class="flex items-center gap-3">
+                <h1 class="text-2xl md:text-3xl font-extrabold text-amber-400">
+                    Opportunity Analyzer
+                </h1>
+                <button id="settingsButton" title="API Settings"
+                    class="p-2 rounded-full text-gray-400 hover:text-white hover:bg-gray-700 transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                    </svg>
+                </button>
+            </div>
         </header>
 
-        <main class="space-y-20 md:space-y-28">
+        <!-- Main Content: Inputs + Results -->
+        <main class="flex-grow flex flex-col xl:flex-row gap-6">
 
-            <section id="prevalence">
-                <h2 class="text-3xl font-bold text-center text-[#073B4C]">Your Family Is Not Alone</h2>
-                <p class="text-center mt-3 text-slate-600 max-w-2xl mx-auto">Chronic pain is a significant challenge facing many young people. Understanding its prevalence is the first step in recognizing the scale of the issue and de-stigmatizing your daughter's experience.</p>
-                <div class="mt-8 grid grid-cols-1 md:grid-cols-2 items-center gap-8">
-                    <div class="bg-white rounded-lg shadow-lg p-6">
-                        <h3 class="font-bold text-2xl text-[#118AB2]">A Widespread Challenge</h3>
-                        <p class="mt-4 text-slate-600">Research shows that chronic pain is surprisingly common in adolescents, affecting a significant portion of the population. This isn't a rare condition, but a widespread health issue that impacts school, social life, and mental well-being for many.</p>
-                        <p class="mt-4 text-5xl font-bold text-[#EF476F]">11% to 38%</p>
-                        <p class="mt-2 font-semibold text-slate-700">of children and adolescents experience chronic pain.</p>
+            <!-- Inputs Panel -->
+            <section class="xl:w-1/3 w-full flex flex-col gap-6">
+                <!-- Organization Names Input -->
+                <div class="bg-gray-800 rounded-lg shadow-lg p-6 flex flex-col">
+                    <label class="block text-lg font-semibold mb-3 text-white">1. Input Mode</label>
+                    
+                    <!-- Toggle Buttons -->
+                    <div class="flex rounded-md shadow-sm mb-4">
+                        <button id="modeToggleOrg" type="button" class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-l-md border border-r-0 border-blue-600 focus:outline-none">
+                            By Organization
+                        </button>
+                        <button id="modeToggleIndustry" type="button" class="flex-1 px-4 py-2 bg-gray-700 text-gray-300 rounded-r-md border border-gray-600 focus:outline-none">
+                            By Industry
+                        </button>
                     </div>
-                    <div class="chart-container md:max-w-sm">
-                        <canvas id="prevalenceChart"></canvas>
-                    </div>
-                </div>
-            </section>
-            
-            <section id="cycle">
-                <h2 class="text-3xl font-bold text-center text-[#073B4C]">The Vicious Cycle of Chronic Pain</h2>
-                <p class="text-center mt-3 text-slate-600 max-w-2xl mx-auto">Chronic pain creates a self-perpetuating feedback loop where pain, thoughts, feelings, and behaviours constantly influence each other, making the world feel smaller and smaller. The goal of CBT is to find a place to intervene and break this cycle.</p>
-                <div class="mt-12 p-6 md:p-8 bg-white rounded-lg shadow-lg">
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 items-center text-center">
-                        <div class="p-4 bg-red-50 border-2 border-dashed border-[#EF476F] rounded-lg">
-                            <p class="text-4xl">😟</p>
-                            <h3 class="font-bold mt-2 text-red-800">Pain Sensation</h3>
-                            <p class="text-sm text-red-700">The cycle starts with a real physical sensation.</p>
-                        </div>
-                        <div class="flowchart-arrow hidden lg:block">→</div>
-                        <div class="p-4 bg-yellow-50 border-2 border-dashed border-[#FFD166] rounded-lg">
-                            <p class="text-4xl">🤔</p>
-                            <h3 class="font-bold mt-2 text-yellow-800">Negative Thoughts</h3>
-                            <p class="text-sm text-yellow-700">"This will never end. I can't do anything."</p>
-                        </div>
-                        <div class="flowchart-arrow hidden lg:block">→</div>
-                        <div class="p-4 bg-blue-50 border-2 border-dashed border-[#118AB2] rounded-lg">
-                            <p class="text-4xl">😭</p>
-                            <h3 class="font-bold mt-2 text-blue-800">Distress & Fear</h3>
-                            <p class="text-sm text-blue-700">Feelings of sadness, anxiety, and hopelessness grow.</p>
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-1 lg:grid-cols-5 items-center text-center mt-6">
-                         <div class="col-span-1 lg:col-span-3"></div>
-                         <div class="flowchart-arrow transform rotate-90 lg:rotate-0">↓</div>
-                         <div class="col-span-1"></div>
-                    </div>
-                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 items-center text-center mt-6">
-                        <div class="p-4 bg-slate-50 border-2 border-dashed border-slate-400 rounded-lg col-start-1 lg:col-start-1">
-                            <p class="text-4xl">📉</p>
-                            <h3 class="font-bold mt-2 text-slate-800">Worsened Pain</h3>
-                            <p class="text-sm text-slate-700">The cycle repeats, strengthening the pain signals.</p>
-                        </div>
-                        <div class="flowchart-arrow hidden lg:block transform rotate-180">→</div>
-                        <div class="p-4 bg-green-50 border-2 border-dashed border-[#06D6A0] rounded-lg">
-                            <p class="text-4xl">🛌</p>
-                            <h3 class="font-bold mt-2 text-green-800">Reduced Activity</h3>
-                            <p class="text-sm text-green-700">Withdrawal from school, friends, and hobbies.</p>
-                        </div>
-                         <div class="flowchart-arrow hidden lg:block transform rotate-180">→</div>
-                         <div class="col-start-1 lg:col-start-4"></div>
-                    </div>
-                </div>
-            </section>
 
-            <section id="pacing">
-                <h2 class="text-3xl font-bold text-center text-[#073B4C]">Breaking the 'Boom & Bust' Cycle</h2>
-                <p class="text-center mt-3 text-slate-600 max-w-2xl mx-auto">A common trap is overdoing it on good days, leading to a crash. Pacing is the skill of using time, not pain, as a guide to slowly and steadily increase activity without causing a flare-up.</p>
-                <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div class="bg-white rounded-lg shadow-lg p-6">
-                        <h3 class="font-bold text-xl text-[#EF476F]">The 'Boom & Bust' Trap</h3>
-                        <p class="mt-2 text-slate-600">Activity levels are erratic. Pushing too hard on a good day (boom) leads to a painful crash (bust), resulting in no consistent progress and increased frustration.</p>
-                        <div class="chart-container mt-4">
-                            <canvas id="boomBustChart"></canvas>
-                        </div>
+                    <!-- Organization Input Wrapper -->
+                    <div id="orgNamesWrapper">
+                        <label for="orgNames" class="block text-lg font-semibold mb-3 text-white">Organization Names</label>
+                        <p class="text-gray-400 text-sm mb-3">Enter one organization name per line.</p>
+                        <textarea id="orgNames" rows="6"
+                            class="w-full p-3 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="Tesla, Inc.&#10;Commonwealth Bank of Australia&#10;Microsoft"
+                        ></textarea>
                     </div>
-                     <div class="bg-white rounded-lg shadow-lg p-6">
-                        <h3 class="font-bold text-xl text-[#06D6A0]">The Pacing Method</h3>
-                        <p class="mt-2 text-slate-600">Activity is increased in small, planned, and consistent steps. This retrains the body and brain, building stamina and confidence while keeping pain stable.</p>
-                        <div class="chart-container mt-4">
-                            <canvas id="pacingChart"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </section>
-            
-            <section id="plan">
-                <h2 class="text-3xl font-bold text-center text-[#073B4C]">A 3-Phase Plan for Progress</h2>
-                <p class="text-center mt-3 text-slate-600 max-w-2xl mx-auto">Recovery is a journey, not a single event. This structured plan breaks the process down into manageable phases, each building on the last to create lasting skills and confidence.</p>
-                <div class="mt-12 max-w-2xl mx-auto">
-                    <div class="relative space-y-12">
-                        <div class="absolute left-4 top-4 h-full border-l-4 border-dashed border-[#118AB2]"></div>
-                        <div class="relative pl-12">
-                            <div class="absolute -left-1 top-1 w-6 h-6 bg-[#118AB2] rounded-full"></div>
-                            <span class="bg-[#118AB2] text-white text-sm font-bold px-3 py-1 rounded-full">WEEKS 1-3</span>
-                            <h3 class="text-2xl font-bold mt-3 text-[#073B4C]">Phase 1: Laying the Groundwork</h3>
-                            <p class="mt-2 text-slate-600">Establish a collaborative partnership. Start gathering data with an activity/mood log. Set tiny, achievable functional goals (SMART goals). Introduce the core skill of Pacing.</p>
-                        </div>
-                        <div class="relative pl-12">
-                             <div class="absolute -left-1 top-1 w-6 h-6 bg-[#06D6A0] rounded-full"></div>
-                            <span class="bg-[#06D6A0] text-white text-sm font-bold px-3 py-1 rounded-full">WEEKS 4-8</span>
-                            <h3 class="text-2xl font-bold mt-3 text-[#073B4C]">Phase 2: Behavioural Activation</h3>
-                            <p class="mt-2 text-slate-600">Systematically re-engage with life. Create a 'Pleasant Activities Menu' and schedule them into the day. Leverage passions (like fashion/beauty) and create a gradual plan to return to school.</p>
-                        </div>
-                        <div class="relative pl-12">
-                            <div class="absolute -left-1 top-1 w-6 h-6 bg-[#EF476F] rounded-full"></div>
-                            <span class="bg-[#EF476F] text-white text-sm font-bold px-3 py-1 rounded-full">WEEKS 9-14</span>
-                            <h3 class="text-2xl font-bold mt-3 text-[#073B4C]">Phase 3: Cognitive Restructuring</h3>
-                            <p class="mt-2 text-slate-600">Learn to identify, challenge, and reframe unhelpful 'Pain Thoughts'. Recognize common 'Thinking Traps' and develop a list of realistic, positive coping statements to use in difficult moments.</p>
-                        </div>
-                    </div>
-                </div>
-            </section>
-            
-            <section id="dr-k-insights">
-                <div class="bg-blue-50 border-y-4 border-blue-200 py-12">
-                    <div class="max-w-4xl mx-auto px-4">
-                        <h2 class="text-3xl font-bold text-center text-blue-800">✨ Insights From Dr. K (Healthy Gamer)</h2>
-                        <p class="text-center mt-3 text-blue-700 max-w-2xl mx-auto">Dr. K's philosophy adds a deeper 'why' to CBT's 'how'. These concepts explain the mind-body connection in an intuitive way, providing powerful motivation for healing.</p>
-                        <div class="mt-12 grid grid-cols-1 md:grid-cols-3 gap-8">
-                            <div class="bg-white p-6 rounded-lg shadow-lg text-center border-t-4 border-blue-300">
-                                <p class="text-5xl">🧘‍♀️</p>
-                                <h3 class="text-xl font-bold mt-3 text-[#073B4C]">Pain vs. Suffering</h3>
-                                <p class="mt-2 text-slate-600 text-sm">Pain is a sensation. Suffering is the mental anguish we add on top. By detaching from the *outcome* of being pain-free, we can reduce suffering even when pain is present.</p>
-                            </div>
-                             <div class="bg-white p-6 rounded-lg shadow-lg text-center border-t-4 border-blue-300">
-                                <p class="text-5xl">📦</p>
-                                <h3 class="text-xl font-bold mt-3 text-[#073B4C]">Samskaras</h3>
-                                <p class="mt-2 text-slate-600 text-sm">Unprocessed emotional experiences can leave "imprints" (Samskaras) that manifest as physical pain. Healing involves acknowledging and 'digesting' these stored emotions.</p>
-                            </div>
-                            <div class="bg-white p-6 rounded-lg shadow-lg text-center border-t-4 border-blue-300">
-                                <p class="text-5xl">🎯</p>
-                                <h3 class="text-xl font-bold mt-3 text-[#073B4C]">Dharma & Dopamine</h3>
-                                <p class="mt-2 text-slate-600 text-sm">Her interests (beauty, fashion) are clues to her purpose (Dharma). Nurturing them builds an identity stronger than pain and helps reset the brain's reward (dopamine) system away from the phone trap.</p>
-                            </div>
+
+                    <!-- Industry Vertical Wrapper -->
+                    <div id="industryVerticalWrapper" class="mt-4 hidden">
+                        <label for="industryVerticalSelect" class="block text-lg font-semibold text-white mb-2">Select Industry Vertical</label>
+                        <p class="text-gray-400 text-sm mb-3">Analyze an entire industry for key opportunities.</p>
+                        <select id="industryVerticalSelect" class="w-full p-3 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="None">None</option>
+                            <option value="Aerospace & Defense">Aerospace & Defense</option>
+                            <option value="Agriculture">Agriculture</option>
+                            <option value="Automotive">Automotive</option>
+                            <option value="Banking & Financial Services">Banking & Financial Services</option>
+                            <option value="Chemicals">Chemicals</option>
+                            <option value="Communications">Communications</option>
+                            <option value="Construction & Engineering">Construction & Engineering</option>
+                            <option value="Consumer Goods">Consumer Goods</option>
+                            <option value="Education">Education</option>
+                            <option value="Energy">Energy</option>
+                            <option value="Government & Public Sector">Government & Public Sector</option>
+                            <option value="Healthcare">Healthcare</option>
+                            <option value="High-Tech">High-Tech</option>
+                            <option value="Hospitality & Travel">Hospitality & Travel</option>
+                            <option value="Industrial Manufacturing">Industrial Manufacturing</option>
+                            <option value="Insurance">Insurance</option>
+                            <option value="Life Sciences">Life Sciences</option>
+                            <option value="Media & Entertainment">Media & Entertainment</option>
+                            <option value="Mining & Metals">Mining & Metals</option>
+                            <option value="Non-Profit">Non-Profit</option>
+                            <option value="Oil & Gas">Oil & Gas</option>
+                            <option value="Pharmaceuticals">Pharmaceuticals</option>
+                            <option value="Professional Services">Professional Services</option>
+                            <option value="Retail">Retail</option>
+                            <option value="Transportation & Logistics">Transportation & Logistics</option>
+                            <option value="Utilities">Utilities</option>
+                        </select>
+                        
+                        <!-- New Region/Territory Input -->
+                        <div class="mt-4">
+                            <label for="regionInput" class="block text-lg font-semibold text-white mb-2">Region/Territory (Optional)</label>
+                            <p class="text-gray-400 text-sm mb-3">Narrow the analysis to a specific region (e.g., "Australia", "Europe", "California").</p>
+                            <input type="text" id="regionInput"
+                                class="w-full p-3 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                placeholder="e.g., North America"
+                            >
                         </div>
                     </div>
                 </div>
+
+                <!-- Product Vendors Input -->
+                <div class="bg-gray-800 rounded-lg shadow-lg p-6 flex flex-col">
+                    <label for="productVendors" class="block text-lg font-semibold mb-3 text-white">2. Product Vendors</label>
+                    <p class="text-gray-400 text-sm mb-3">The vendor list from your file. You can edit this list.</p>
+                    <textarea id="productVendors" rows="8"
+                        class="w-full p-3 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >Acceldata, Acquia, Adobe, Alteryx, Appian, Atlassian, Automation Anywhere, Axway, BeyondNow, Bizagi, BladeBridge, Blue Prism, Blue Yonder, Boomi, Camunda, Canon, CAST SW, Celigo, Celonis, Cloudera, Collibra, Databricks, DataRobot, DataStax, DBTLabs, Denodo, Domino, FiveTran, Flowable, Garfan, GenRocket, Gitlab, Hardis Group, Hatha Systems, Informatica, JapEV Nordics, Kofax, Kong, Kovair, Mirakl, MongoDB, MuleSoft, NewGen, OpenText, Orbu, OutSystems, Pega, Qlik, Quadien, Quest, RPA, Shopify, Sitecore, Snaplogic, Snowflake, Software AG, Solix, Sourcefu, Stibo, Superviso, Tableau, Talend, Teradata, TIBCO, UiPath, Unqork, VisualF, Weights & Biases, Whatfix, Workato</textarea>
+                </div>
+
+                <!-- Optional Enhancements -->
+                <div class="bg-gray-800 rounded-lg shadow-lg p-6 flex flex-col gap-4">
+                    <h3 class="block text-lg font-semibold text-white">3. Optional Enhancements</h3>
+                    
+                    <!-- Hyperscaler Select -->
+                    <div>
+                        <label for="hyperscalerSelect" class="block text-sm font-medium text-gray-300 mb-2">Hyperscaler Partner</label>
+                        <select id="hyperscalerSelect" class="w-full p-3 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="None">None</option>
+                            <option value="Amazon Web Services (AWS)">Amazon Web Services (AWS)</option>
+                            <option value="Microsoft Azure">Microsoft Azure</option>
+                            <option value="Google Cloud Platform (GCP)">Google Cloud Platform (GCP)</option>
+                        </select>
+                    </div>
+
+                    <!-- AI Platform Select -->
+                    <div>
+                        <label for="aiPlatformSelect" class="block text-sm font-medium text-gray-300 mb-2">AI Platform Partner</label>
+                        <select id="aiPlatformSelect" class="w-full p-3 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="None">None</option>
+                            <option value="Databricks">Databricks</option>
+                            <option value="Snowflake">Snowflake</option>
+                            <option value="OpenAI">OpenAI</option>
+                            <option value="Google Vertex AI">Google Vertex AI</option>
+                            <option value="Amazon SageMaker">Amazon SageMaker</option>
+                            <option value="DataRobot">DataRobot</option>
+                        </select>
+                    </div>
+                </div>
+
+
+                <!-- Action Button -->
+                <button id="generateButton"
+                    class="w-full bg-blue-600 text-white font-bold py-3 px-6 rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed">
+                    Generate Analysis
+                </button>
             </section>
 
-            <section id="traps">
-                <h2 class="text-3xl font-bold text-center text-[#073B4C]">Spotting Common Thinking Traps</h2>
-                <p class="text-center mt-3 text-slate-600 max-w-2xl mx-auto">Our minds have mental habits that can fuel the pain cycle. Helping your daughter notice and name these traps is the first step to changing them.</p>
-                <div class="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                    <div class="bg-white p-6 rounded-lg shadow-lg text-center">
-                        <p class="text-5xl">🔮</p>
-                        <h3 class="text-xl font-bold mt-3 text-[#073B4C]">Catastrophizing</h3>
-                        <p class="mt-2 text-slate-600">Assuming the worst possible outcome. <br><em>"This pain will never end. I'll be like this forever."</em></p>
+            <!-- Results Panel -->
+            <section class="xl:w-2/3 w-full bg-gray-800 rounded-lg shadow-lg p-6 flex flex-col">
+                <!-- Results Header -->
+                <div class="flex flex-wrap justify-between items-center gap-4 mb-4">
+                    <h2 class="text-lg font-semibold text-white">4. Analysis Results</h2>
+                    <div class="flex gap-4">
+                        <button id="generateCampaignButton"
+                            class="hidden bg-purple-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50 transition duration-300 ease-in-out">
+                            Suggest Campaigns
+                        </button>
+                        <button id="downloadCsvButton"
+                            class="hidden bg-green-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50 transition duration-300 ease-in-out">
+                            Download CSV
+                        </button>
                     </div>
-                    <div class="bg-white p-6 rounded-lg shadow-lg text-center">
-                        <p class="text-5xl">🌓</p>
-                        <h3 class="text-xl font-bold mt-3 text-[#073B4C]">All-or-Nothing</h3>
-                        <p class="mt-2 text-slate-600">Seeing things in extremes, with no middle ground. <br><em>"The day was a total failure because my pain flared up."</em></p>
+                </div>
+
+                <!-- Loading Indicator -->
+                <div id="loader" class="hidden flex-grow items-center justify-center">
+                    <div class="flex flex-col items-center gap-4">
+                        <div class="spinner"></div>
+                        <p class="text-gray-400">Analyzing organizations... This may take a moment.</p>
                     </div>
-                    <div class="bg-white p-6 rounded-lg shadow-lg text-center">
-                        <p class="text-5xl">🧠</p>
-                        <h3 class="text-xl font-bold mt-3 text-[#073B4C]">Mind Reading</h3>
-                        <p class="mt-2 text-slate-600">Assuming you know what others are thinking negatively about you. <br><em>"They all think I'm just being lazy."</em></p>
-                    </div>
+                </div>
+
+                <!-- Results Table -->
+                <div id="resultsContainer" class="overflow-x-auto">
+                    <table id="resultsTable" class="min-w-full divide-y divide-gray-700">
+                        <thead class="bg-gray-700">
+                            <tr>
+                                <th id="orgColumnHeader" scope="col" class="py-3.5 px-4 text-left text-sm font-semibold text-white">Organisation</th>
+                                <th scope="col" class="py-3.5 px-4 text-left text-sm font-semibold text-white">Brief Opportunity</th>
+                                <th scope="col" class="py-3.5 px-4 text-left text-sm font-semibold text-white">Proposed Vendor(s)</th>
+                                <th scope="col" class="py-3.5 px-4 text-left text-sm font-semibold text-white">Target Organizations</th>
+                                <th scope="col" class="py-3.5 px-4 text-left text-sm font-semibold text-white">Justification</th>
+                                <th scope="col" class="py-3.5 px-4 text-left text-sm font-semibold text-white">Funding Sources</th>
+                            </tr>
+                        </thead>
+                        <tbody id="resultsTableBody" class="divide-y divide-gray-700 bg-gray-800">
+                            <!-- Rows will be injected here by JavaScript -->
+                            <tr id="placeholderRow">
+                                <td colspan="6" class="px-4 py-6 text-center text-gray-400">
+                                    Click "Generate Analysis" to see results.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </section>
 
         </main>
-
-        <footer class="text-center mt-20 border-t pt-8">
-            <p class="text-slate-600">This infographic is for educational purposes and is not a substitute for professional medical advice. Always consult with a qualified health provider for diagnosis and treatment.</p>
-        </footer>
-
     </div>
 
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
+    <!-- Error Modal -->
+    <div id="errorModal" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-white rounded-lg shadow-xl max-w-sm w-full">
+            <div class="flex justify-between items-center p-4 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-900">Error</h3>
+                <button id="closeModalButton" class="text-gray-400 hover:text-gray-600 modal-close-button">&times;</button>
+            </div>
+            <div class="p-4">
+                <p id="errorMessage" class="text-sm text-gray-700">An error occurred.</p>
+            </div>
+        </div>
+    </div>
 
-        const palette = {
-            red: '#EF476F',
-            yellow: '#FFD166',
-            green: '#06D6A0',
-            blue: '#118AB2',
-            darkBlue: '#073B4C'
-        };
+    <!-- Campaign Modal -->
+    <div id="campaignModal" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] flex flex-col">
+            <!-- Modal Header -->
+            <div class="flex justify-between items-center p-5 border-b border-gray-700">
+                <h3 class="text-xl font-semibold text-white">Marketing Campaign Suggestions</h3>
+                <button id="closeCampaignModalButton" class="text-gray-400 hover:text-gray-300 text-3xl leading-none modal-close-button">&times;</button>
+            </div>
+            
+            <!-- Modal Body -->
+            <div class="p-5 overflow-y-auto">
+                <!-- Loader -->
+                <div id="campaignLoader" class="hidden flex-grow items-center justify-center my-10">
+                    <div class="flex flex-col items-center gap-4">
+                        <div class="spinner"></div>
+                        <p class="text-gray-400">Generating campaign ideas...</p>
+                    </div>
+                </div>
+                
+                <!-- Campaign Content -->
+                <div id="campaignContent" class="hidden">
+                    <!-- Tabs -->
+                    <div class="mb-4 border-b border-gray-700">
+                        <nav class="flex -mb-px" aria-label="Tabs">
+                            <button id="groupCampaignTab" class="tab-button w-1/2 py-4 px-1 text-center border-b-2 font-medium text-sm active">
+                                Broad Group Campaign
+                            </button>
+                            <button id="abmCampaignTab" class="tab-button w-1/2 py-4 px-1 text-center border-b-2 font-medium text-sm">
+                                Account-Based (ABM)
+                            </button>
+                        </nav>
+                    </div>
 
-        const tooltipTitleCallback = (context) => {
-            const item = context[0];
-            let label = item.chart.data.labels[item.dataIndex];
-            if (Array.isArray(label)) {
-                return label.join(' ');
-            }
-            return label;
-        };
+                    <!-- Tab Panes -->
+                    <div>
+                        <!-- Group Campaign Content -->
+                        <div id="groupCampaignContent">
+                            <!-- Content injected by JS -->
+                        </div>
+                        <!-- ABM Campaign Content -->
+                        <div id="abmCampaignContent" class="hidden">
+                            <!-- Content injected by JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="flex justify-end p-4 border-t border-gray-700">
+                <button id="exportCampaignButton"
+                    class="hidden bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition duration-300 ease-in-out">
+                    Export Campaigns (JSON)
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-gray-800 rounded-lg shadow-xl max-w-md w-full">
+            <div class="flex justify-between items-center p-5 border-b border-gray-700">
+                <h3 class="text-xl font-semibold text-white">API Settings</h3>
+                <button id="closeSettingsButton" class="text-gray-400 hover:text-gray-300 text-3xl leading-none modal-close-button">&times;</button>
+            </div>
+            <div class="p-5 space-y-4">
+                <div>
+                    <label for="apiKeyInput" class="block text-sm font-medium text-gray-300 mb-2">Gemini API Key</label>
+                    <p class="text-xs text-gray-400 mb-3">Your key is stored only in this browser session (sessionStorage) and never sent anywhere except Google's API.</p>
+                    <div class="flex gap-2">
+                        <input type="password" id="apiKeyInput" placeholder="AIza..."
+                            class="flex-1 p-3 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm">
+                        <button id="toggleKeyVisibility" type="button"
+                            class="px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-gray-400 hover:text-white hover:bg-gray-600 transition focus:outline-none">
+                            <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                        </button>
+                    </div>
+                </div>
+                <div id="keyStatus" class="hidden text-sm py-2 px-3 rounded-md"></div>
+            </div>
+            <div class="flex justify-end gap-3 p-4 border-t border-gray-700">
+                <button id="clearKeyButton" class="px-4 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-gray-700 rounded-md transition focus:outline-none">
+                    Clear Key
+                </button>
+                <button id="saveKeyButton" class="px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-md hover:bg-blue-700 transition focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    Save Key
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // --- Gemini API Configuration ---
+        // API key is stored in sessionStorage; set it via the ⚙ settings button.
+        function getApiKey() {
+            return sessionStorage.getItem('gemini_api_key') || '';
+        }
+        function getApiUrl() {
+            return `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${getApiKey()}`;
+        }
+
+        // --- Global State ---
+        let currentAnalysisResults = []; // Stores { orgName, opportunities }
+        let currentInputMode = 'organization'; // 'organization' or 'industry'
+        let currentCampaignSuggestions = {}; // Stores the raw campaign JSON response
+
+        // --- DOM Elements ---
+        // Inputs
+        const modeToggleOrg = document.getElementById('modeToggleOrg');
+        const modeToggleIndustry = document.getElementById('modeToggleIndustry');
+        const orgNamesWrapper = document.getElementById('orgNamesWrapper');
+        const industryVerticalWrapper = document.getElementById('industryVerticalWrapper');
+
+        const orgNamesInput = document.getElementById('orgNames');
+        const productVendorsInput = document.getElementById('productVendors');
+        const hyperscalerSelect = document.getElementById('hyperscalerSelect');
+        const aiPlatformSelect = document.getElementById('aiPlatformSelect');
+        const industryVerticalSelect = document.getElementById('industryVerticalSelect'); 
+        const regionInput = document.getElementById('regionInput');
+        const generateButton = document.getElementById('generateButton');
         
-        const chartDefaultOptions = {
-             plugins: {
-                tooltip: {
-                    callbacks: {
-                        title: tooltipTitleCallback
-                    }
-                },
-                legend: {
-                    display: false
-                }
-            }
-        };
+        // Results & State
+        const loader = document.getElementById('loader');
+        const resultsContainer = document.getElementById('resultsContainer');
+        const resultsTable = document.getElementById('resultsTable');
+        const resultsTableBody = document.getElementById('resultsTableBody');
+        const downloadCsvButton = document.getElementById('downloadCsvButton');
+        const orgColumnHeader = document.getElementById('orgColumnHeader');
+        
+        // Error Modal Elements
+        const errorModal = document.getElementById('errorModal');
+        const errorMessage = document.getElementById('errorMessage');
+        const closeModalButton = document.getElementById('closeModalButton');
 
-        const prevalenceCtx = document.getElementById('prevalenceChart');
-        if (prevalenceCtx) {
-            new Chart(prevalenceCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Adolescents with Chronic Pain', 'Unaffected Adolescents'],
-                    datasets: [{
-                        label: '% of Adolescents',
-                        data: [25, 75], // Using an average of 25% for visualization
-                        backgroundColor: [palette.red, '#e2e8f0'],
-                        borderColor: ['#ffffff'],
-                        borderWidth: 4,
-                        hoverOffset: 8
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    cutout: '70%',
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: {
-                                color: palette.darkBlue,
-                                font: {
-                                    size: 14,
-                                    weight: '600'
-                                }
-                            }
-                        },
-                        tooltip: {
-                           callbacks: {
-                                title: tooltipTitleCallback
-                           }
+        // Campaign Modal Elements
+        const generateCampaignButton = document.getElementById('generateCampaignButton');
+        const campaignModal = document.getElementById('campaignModal');
+        const closeCampaignModalButton = document.getElementById('closeCampaignModalButton');
+        const campaignLoader = document.getElementById('campaignLoader');
+        const campaignContent = document.getElementById('campaignContent');
+        const groupCampaignTab = document.getElementById('groupCampaignTab');
+        const abmCampaignTab = document.getElementById('abmCampaignTab');
+        const groupCampaignContent = document.getElementById('groupCampaignContent');
+        const abmCampaignContent = document.getElementById('abmCampaignContent');
+        const campaignTabsContainer = document.querySelector('.flex[aria-label="Tabs"]')?.parentElement;
+        const exportCampaignButton = document.getElementById('exportCampaignButton');
+
+        // Settings Modal Elements
+        const settingsButton = document.getElementById('settingsButton');
+        const settingsModal = document.getElementById('settingsModal');
+        const closeSettingsButton = document.getElementById('closeSettingsButton');
+        const apiKeyInput = document.getElementById('apiKeyInput');
+        const saveKeyButton = document.getElementById('saveKeyButton');
+        const clearKeyButton = document.getElementById('clearKeyButton');
+        const toggleKeyVisibility = document.getElementById('toggleKeyVisibility');
+        const keyStatus = document.getElementById('keyStatus');
+
+        // Populate API key field from sessionStorage on load
+        if (sessionStorage.getItem('gemini_api_key')) {
+            apiKeyInput.value = sessionStorage.getItem('gemini_api_key');
+        }
+
+        // --- Event Listeners ---
+        generateButton.addEventListener('click', handleAnalysis);
+        downloadCsvButton.addEventListener('click', downloadCSV);
+        closeModalButton.addEventListener('click', () => errorModal.classList.add('hidden'));
+
+        // Campaign Listeners
+        generateCampaignButton.addEventListener('click', handleCampaignGeneration);
+        closeCampaignModalButton.addEventListener('click', () => campaignModal.classList.add('hidden'));
+        groupCampaignTab.addEventListener('click', () => switchTab('group'));
+        abmCampaignTab.addEventListener('click', () => switchTab('abm'));
+        exportCampaignButton.addEventListener('click', downloadCampaignJSON);
+
+        // Settings Listeners
+        settingsButton.addEventListener('click', () => {
+            apiKeyInput.value = sessionStorage.getItem('gemini_api_key') || '';
+            keyStatus.classList.add('hidden');
+            settingsModal.classList.remove('hidden');
+        });
+        closeSettingsButton.addEventListener('click', () => settingsModal.classList.add('hidden'));
+        saveKeyButton.addEventListener('click', () => {
+            const key = apiKeyInput.value.trim();
+            if (!key) {
+                keyStatus.textContent = 'Please enter a valid API key.';
+                keyStatus.className = 'text-sm py-2 px-3 rounded-md bg-red-900 text-red-300';
+                keyStatus.classList.remove('hidden');
+                return;
+            }
+            sessionStorage.setItem('gemini_api_key', key);
+            keyStatus.textContent = 'API key saved for this session.';
+            keyStatus.className = 'text-sm py-2 px-3 rounded-md bg-green-900 text-green-300';
+            keyStatus.classList.remove('hidden');
+            setTimeout(() => settingsModal.classList.add('hidden'), 1200);
+        });
+        clearKeyButton.addEventListener('click', () => {
+            sessionStorage.removeItem('gemini_api_key');
+            apiKeyInput.value = '';
+            keyStatus.textContent = 'API key cleared.';
+            keyStatus.className = 'text-sm py-2 px-3 rounded-md bg-yellow-900 text-yellow-300';
+            keyStatus.classList.remove('hidden');
+        });
+        toggleKeyVisibility.addEventListener('click', () => {
+            apiKeyInput.type = apiKeyInput.type === 'password' ? 'text' : 'password';
+        });
+
+        // Mode Toggle Listeners
+        modeToggleOrg.addEventListener('click', () => setInputMode('organization'));
+        modeToggleIndustry.addEventListener('click', () => setInputMode('industry'));
+
+        /**
+         * Sets the input mode for the application.
+         * @param {'organization' | 'industry'} mode
+         */
+        function setInputMode(mode) {
+            currentInputMode = mode;
+            if (mode === 'organization') {
+                // Set Org mode active
+                modeToggleOrg.classList.replace('bg-gray-700', 'bg-blue-600');
+                modeToggleOrg.classList.replace('text-gray-300', 'text-white');
+                modeToggleOrg.classList.replace('border-gray-600', 'border-blue-600');
+                
+                // Set Industry mode inactive
+                modeToggleIndustry.classList.replace('bg-blue-600', 'bg-gray-700');
+                modeToggleIndustry.classList.replace('text-white', 'text-gray-300');
+                modeToggleIndustry.classList.replace('border-blue-600', 'border-gray-600');
+                
+                // Toggle visibility
+                orgNamesWrapper.classList.remove('hidden');
+                industryVerticalWrapper.classList.add('hidden');
+            } else {
+                // Set Org mode inactive
+                modeToggleOrg.classList.replace('bg-blue-600', 'bg-gray-700');
+                modeToggleOrg.classList.replace('text-white', 'text-gray-300');
+                modeToggleOrg.classList.replace('border-blue-600', 'border-gray-600');
+
+                // Set Industry mode active
+                modeToggleIndustry.classList.replace('bg-gray-700', 'bg-blue-600');
+                modeToggleIndustry.classList.replace('text-gray-300', 'text-white');
+                modeToggleIndustry.classList.replace('border-gray-600', 'border-blue-600');
+
+                // Toggle visibility
+                orgNamesWrapper.classList.add('hidden');
+                industryVerticalWrapper.classList.remove('hidden');
+            }
+        }
+
+        // --- Error Handling ---
+        function showError(message) {
+            console.error(message);
+            errorMessage.textContent = message;
+            errorModal.classList.remove('hidden');
+            // Hide loader and reset button
+            loader.classList.add('hidden');
+            generateButton.disabled = false;
+            generateButton.textContent = 'Generate Analysis';
+            resultsContainer.classList.remove('hidden');
+        }
+
+        // --- Exponential Backoff Fetch ---
+        /**
+         * Fetches a resource with exponential backoff.
+         * @param {string} url - The URL to fetch.
+         * @param {object} options - The options for the fetch request.
+         * @returns {Promise<Response>} - A promise that resolves to the fetch response.
+         */
+        async function fetchWithBackoff(url, options, maxRetries = 5, initialDelay = 1000) {
+            let delay = initialDelay;
+            for (let i = 0; i < maxRetries; i++) {
+                try {
+                    const response = await fetch(url, options);
+
+                    if (response.ok) {
+                        return response;
+                    }
+
+                    // Handle non-ok responses
+                    let errorBody;
+                    let errorText = `HTTP error ${response.status} ${response.statusText}`;
+                    try {
+                        errorBody = await response.json();
+                        errorText = errorBody?.error?.message || JSON.stringify(errorBody);
+                    } catch (e) {
+                        // Response was not JSON, use status text
+                        try {
+                            errorText = await response.text();
+                        } catch (textErr) {
+                            // ignore
                         }
                     }
+
+                    if (response.status === 401) {
+                         throw new Error("Analysis failed: API key is invalid or unauthorized (401). Please check your API key.");
+                    }
+                    if (response.status === 429) {
+                        // Throttled, retry
+                        console.warn(`Attempt ${i + 1}: Throttled (429). Retrying in ${delay}ms...`);
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                        delay *= 2;
+                        continue; // Continue to the next retry
+                    }
+                    
+                    // For other errors, throw immediately
+                    throw new Error(errorText);
+
+                } catch (error) {
+                    // Network errors or thrown errors
+                    console.error(`Fetch attempt ${i + 1} failed:`, error);
+                    if (i === maxRetries - 1) {
+                        throw new Error(`Analysis failed: ${error.message}`);
+                    }
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    delay *= 2;
                 }
+            }
+        }
+
+
+        // --- Core Analysis Logic ---
+
+        /**
+         * Main function to handle the analysis process.
+         */
+        async function handleAnalysis() {
+            // Guard: require API key
+            if (!getApiKey()) {
+                settingsModal.classList.remove('hidden');
+                apiKeyInput.focus();
+                return;
+            }
+
+            // 1. Get common inputs
+            const vendorList = productVendorsInput.value;
+            const hyperscaler = hyperscalerSelect.value;
+            const aiPlatform = aiPlatformSelect.value;
+
+            // 2. Set UI to loading state
+            currentAnalysisResults = []; // Reset results
+            generateButton.disabled = true;
+            generateButton.textContent = 'Analyzing...';
+            loader.classList.remove('hidden');
+            resultsContainer.classList.add('hidden'); // Hide table container
+            downloadCsvButton.classList.add('hidden'); // Hide buttons
+            generateCampaignButton.classList.add('hidden');
+            resultsTableBody.innerHTML = ''; // Clear previous results
+            document.getElementById('placeholderRow')?.remove(); // Remove placeholder if it exists
+
+            try {
+                if (currentInputMode === 'organization') {
+                    orgColumnHeader.textContent = 'Organisation'; // Set header
+                    const orgNames = orgNamesInput.value.split('\n').filter(Boolean).map(name => name.trim());
+                    if (orgNames.length === 0) {
+                        showError("Please enter at least one organization name.");
+                        return; // Exit early
+                    }
+                    // Run analysis for each org
+                    await runOrganizationAnalysis(orgNames, vendorList, hyperscaler, aiPlatform);
+                
+                } else { // Mode is 'industry'
+                    orgColumnHeader.textContent = 'Industry & Region'; // Set header
+                    const industryVertical = industryVerticalSelect.value;
+                    if (industryVertical === 'None') {
+                        showError("Please select an industry to analyze.");
+                        return; // Exit early
+                    }
+                    // Run analysis for the selected industry
+                    await runIndustryAnalysis(industryVertical, vendorList, hyperscaler, aiPlatform);
+                }
+                
+                // 4. Restore UI
+                loader.classList.add('hidden');
+                resultsContainer.classList.remove('hidden');
+                
+                if (currentAnalysisResults.length > 0) {
+                    downloadCsvButton.classList.remove('hidden');
+                    generateCampaignButton.classList.remove('hidden');
+                }
+
+            } catch (error) {
+                showError(error.message);
+                resultsContainer.classList.remove('hidden'); // Show container even on error to see "no results"
+            } finally {
+                generateButton.disabled = false;
+                generateButton.textContent = 'Generate Analysis';
+            }
+        }
+
+        /**
+         * Runs analysis for a list of organizations.
+         */
+        async function runOrganizationAnalysis(orgNames, vendorList, hyperscaler, aiPlatform) {
+            for (const orgName of orgNames) {
+                console.log(`Fetching opportunities for ${orgName}...`);
+                // Pass "None" for industry, as it's not a filter in this mode
+                const opportunities = await fetchOpportunitiesForOrg(orgName, vendorList, hyperscaler, aiPlatform, "None");
+                
+                if (opportunities && opportunities.length > 0) {
+                    currentAnalysisResults.push({ orgName, opportunities }); // Save results
+                    renderTableRows(orgName, opportunities);
+                } else {
+                    // Add a row indicating no opportunities were found
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-white">${orgName}</td>
+                        <td colspan="5" class="px-4 py-4 whitespace-nowrap text-sm text-gray-400">No specific opportunities identified.</td>
+                    `;
+                    resultsTableBody.appendChild(tr);
+                }
+            }
+        }
+
+        /**
+         * Runs analysis for a single industry.
+         */
+        async function runIndustryAnalysis(industryVertical, vendorList, hyperscaler, aiPlatform) {
+            console.log(`Fetching opportunities for industry: ${industryVertical}...`);
+            const region = regionInput.value.trim(); // Get region
+            const opportunities = await fetchOpportunitiesForIndustry(industryVertical, region, vendorList, hyperscaler, aiPlatform); // Pass region
+            
+            const displayName = region ? `${industryVertical} (${region})` : industryVertical;
+            
+            if (opportunities && opportunities.length > 0) {
+                // Use industry name as the 'orgName' for storing and rendering
+                currentAnalysisResults.push({ orgName: displayName, opportunities });
+                renderTableRows(displayName, opportunities);
+            } else {
+                // Add a row indicating no opportunities were found
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-white">${displayName}</td>
+                    <td colspan="5" class="px-4 py-4 whitespace-nowrap text-sm text-gray-400">No specific opportunities identified.</td>
+                `;
+                resultsTableBody.appendChild(tr);
+            }
+        }
+
+
+        /**
+         * Fetches opportunities for a single organization from the Gemini API.
+         * @param {string} orgName - The name of the organization.
+         * @param {string} vendorList - The comma-separated list of vendors.
+         * @param {string} hyperscaler - The selected hyperscaler.
+         * @param {string} aiPlatform - The selected AI platform.
+         * @param {string} industryVertical - The selected industry vertical.
+         * @returns {Promise<Array<object>>} - A promise that resolves to an array of opportunity objects.
+         */
+        async function fetchOpportunitiesForOrg(orgName, vendorList, hyperscaler, aiPlatform, industryVertical) {
+            
+            // System prompt defining the AI's role and rules
+            const systemPrompt = `You are an expert GSI (Global Systems Integrator) strategy analyst. Your task is to identify up to 5 strategic opportunities for a target organization based on public web data.
+
+            RULES:
+            1.  You MUST use the "google_search" tool to find the organization's latest initiatives, challenges, and tech stack.
+            2.  Your response MUST be a single, valid JSON string. Do NOT include markdown fences (like \`\`\`json) or any other text outside the JSON object.
+            3.  The JSON object must have a key "opportunities", which is an array.
+            4.  Each opportunity object in the array must have: "description", "proposedVendors" (an array of strings), "justification", and "fundingSources".
+                (NOTE: "targetOrganizations" is NOT needed for this mode).
+            5.  OPPORTUNITIES: Must be 2-3 sentences max. Focus on digital transformation, AI adoption, data modernization, cybersecurity, or platform engineering.
+            6.  VENDORS: Propose only 1-2 vendors from the provided list. Only exceed this if a joint offering (e.g., Databricks + MuleSoft) is clearly high-value.
+            7.  JUSTIFICATION: 2-3 sentences explaining *why* this is an opportunity, citing search results (e.g., "Recent news highlights their supply chain issues...").
+            8.  HYPERSCALER/AI: Use the provided Hyperscaler (AWS, Azure, GCP) and AI Platform (Databricks, Snowflake, etc.) to enhance the opportunity.
+            9.  FUNDING: Research and identify potential funding sources (e.g., "PoC funds", "co-investment", "migration acceleration program") from the proposed vendor(s), the hyperscaler, and the AI platform. If none are found, state "Standard PoC/Pilot funding."
+            10. INDUSTRY: If an 'industryVertical' is provided (and not 'None'), use it to focus your search and analysis on industry-specific challenges and initiatives for the given organization.
+            11. If no relevant initiatives or challenges are found, return an empty array for "opportunities".`;
+
+            // User prompt providing the data
+            const userPrompt = `Analyze the following organization:
+            Organization Name: ${orgName}
+            
+            Product Vendor List (use only these):
+            ${vendorList}
+            
+            Selected Partners:
+            Hyperscaler: ${hyperscaler}
+            AI Platform: ${aiPlatform}
+            Industry Vertical: ${industryVertical}
+            `;
+
+            // Construct the API payload
+            const payload = {
+                contents: [{
+                    parts: [{ text: userPrompt }]
+                }],
+                tools: [{ "google_search": {} }],
+                systemInstruction: {
+                    parts: [{ text: systemPrompt }]
+                },
+            };
+
+            // Make the API call
+            const response = await fetchWithBackoff(getApiUrl(), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            const result = await response.json();
+
+            // Extract, parse, and return the JSON data from the model's response
+            const jsonText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (!jsonText) {
+                // Check for block reason
+                const blockReason = result.promptFeedback?.blockReason;
+                if (blockReason) {
+                    throw new Error(`Analysis for ${orgName} was blocked: ${blockReason}`);
+                }
+                throw new Error(`Failed to get a valid response for ${orgName}.`);
+            }
+
+            try {
+                // Clean up potential markdown fences that the model might add despite instructions
+                const cleanedJsonText = jsonText
+                    .replace(/^```json\n?/, '')
+                    .replace(/\n?```$/, '');
+                
+                const parsedResult = JSON.parse(cleanedJsonText);
+                return parsedResult.opportunities;
+
+            } catch (e) {
+                console.error("Failed to parse JSON response:", jsonText);
+                throw new Error(`Failed to parse JSON response from API: ${e.message}`);
+            }
+        }
+
+        /**
+         * NEW: Fetches opportunities for an entire industry.
+         */
+        async function fetchOpportunitiesForIndustry(industryVertical, region, vendorList, hyperscaler, aiPlatform) {
+            
+            const systemPrompt = `You are an expert GSI (Global Systems Integrator) strategy analyst. Your task is to identify 5 key strategic opportunities for an entire industry based on public web data.
+
+            RULES:
+            1.  You MUST use the "google_search" tool to find the latest trends, key challenges, and common initiatives for the specified industry.
+            2.  If a 'region' is provided, you MUST focus your search and analysis on that specific region (e.g., "Banking challenges in Australia").
+            3.  Your response MUST be a single, valid JSON string. Do NOT include markdown fences (like \`\`\`json).
+            4.  The JSON object must have a key "opportunities", which is an array.
+            5.  Each opportunity object must have: "description", "proposedVendors" (array), "targetOrganizations" (array), "justification" (string), and "fundingSources" (string).
+            6.  OPPORTUNITIES (INDUSTRY-WIDE): Must be 2-3 sentences max. Focus on broad themes like "Data & AI Modernization," "Supply Chain Resilience," "Cybersecurity Posture," etc.
+            7.  VENDORS: Propose only 1-2 vendors from the provided list relevant to this *industry-wide* theme.
+            8.  TARGET ORGANIZATIONS: Based on your search, list 3-5 example organizations within the industry and region that are highly relevant to this specific opportunity.
+            9.  JUSTIFICATION: 2-3 sentences explaining *why* this is a key opportunity *for the whole industry*, citing trends (e.g., "Regulatory changes are forcing...").
+            10. HYPERSCALER/AI: Use the provided partners to enhance the industry-wide solution.
+            11. FUNDING: Research potential funding sources for this *type* of initiative (e.g., "Industry-specific migration funds," "Co-investment programs," "Partner development funds"). If none are found, state "Standard PoC/Pilot funding."
+            12. If no relevant trends are found, return an empty array for "opportunities".`;
+
+            const userPrompt = `Analyze the following industry:
+            Industry Vertical: ${industryVertical}
+            Region (if any): ${region || 'None'}
+            
+            Product Vendor List (use only these):
+            ${vendorList}
+            
+            Selected Partners:
+            Hyperscaler: ${hyperscaler}
+            AI Platform: ${aiPlatform}
+            `;
+
+            const payload = {
+                contents: [{ parts: [{ text: userPrompt }] }],
+                tools: [{ "google_search": {} }],
+                systemInstruction: { parts: [{ text: systemPrompt }] },
+            };
+
+            const response = await fetchWithBackoff(getApiUrl(), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            const result = await response.json();
+            const jsonText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+
+            if (!jsonText) {
+                const blockReason = result.promptFeedback?.blockReason;
+                if (blockReason) {
+                    throw new Error(`Analysis for ${industryVertical} was blocked: ${blockReason}`);
+                }
+                throw new Error(`Failed to get a valid response for ${industryVertical}.`);
+            }
+
+            try {
+                const cleanedJsonText = jsonText
+                    .replace(/^```json\n?/, '')
+                    .replace(/\n?```$/, '');
+                
+                const parsedResult = JSON.parse(cleanedJsonText);
+                return parsedResult.opportunities;
+            } catch (e) {
+                console.error("Failed to parse JSON response:", jsonText);
+                throw new Error(`Failed to parse JSON response from API: ${e.message}`);
+            }
+        }
+
+
+        /**
+         * Renders the opportunity rows for a given organization or industry in the table.
+         * @param {string} orgName - The name of the organization or industry.
+         * @param {Array<object>} opportunities - The array of opportunity objects.
+         */
+        function renderTableRows(orgName, opportunities) {
+            const placeholder = document.getElementById('placeholderRow');
+            if (placeholder) {
+                placeholder.remove(); // Remove the "Click to generate" placeholder
+            }
+
+            opportunities.forEach((opp, index) => {
+                const tr = document.createElement('tr');
+                tr.classList.add('hover:bg-gray-700');
+                
+                // Add org name only to the first row for that org
+                const orgCell = (index === 0) 
+                    ? `<td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-white align-top" rowspan="${opportunities.length}">${escapeHTML(orgName)}</td>`
+                    : '';
+                
+                // Escape all opportunity data
+                const escapedDesc = escapeHTML(opp.description);
+                
+                // Fix: Ensure proposedVendors is always an array before joining
+                const vendors = Array.isArray(opp.proposedVendors) 
+                    ? opp.proposedVendors 
+                    : (typeof opp.proposedVendors === 'string' ? [opp.proposedVendors] : []);
+                const escapedVendors = escapeHTML(vendors.join(', '));
+                
+                // NEW: Handle targetOrganizations (only for industry mode)
+                let targetOrgsCell = '';
+                if (currentInputMode === 'industry') {
+                    const targetOrgs = Array.isArray(opp.targetOrganizations)
+                        ? opp.targetOrganizations
+                        : (typeof opp.targetOrganizations === 'string' ? [opp.targetOrganizations] : []);
+                    const escapedTargetOrgs = escapeHTML(targetOrgs.join(', '));
+                    targetOrgsCell = `<td class="px-4 py-4 text-sm text-gray-300 align-top">${escapedTargetOrgs}</td>`;
+                } else {
+                    // For org mode, we add an empty cell to keep alignment
+                    targetOrgsCell = `<td class="px-4 py-4 text-sm text-gray-300 align-top"></td>`;
+                }
+
+                const escapedJustification = escapeHTML(opp.justification);
+                const escapedFunding = escapeHTML(opp.fundingSources);
+
+                tr.innerHTML = `
+                    ${orgCell}
+                    <td class="px-4 py-4 text-sm text-gray-300 align-top">${escapedDesc}</td>
+                    <td class="px-4 py-4 text-sm text-gray-300 align-top">${escapedVendors}</td>
+                    ${targetOrgsCell}
+                    <td class="px-4 py-4 text-sm text-gray-300 align-top">${escapedJustification}</td>
+                    <td class="px-4 py-4 text-sm text-gray-300 align-top">${escapedFunding}</td>
+                `;
+                resultsTableBody.appendChild(tr);
             });
         }
 
-        const commonLineOptions = {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    title: {
-                        display: true,
-                        text: 'Activity / Energy Level'
-                    }
-                },
-                x: {
-                     title: {
-                        display: true,
-                        text: 'Time (Days)'
-                    }
-                }
-            },
-            ...chartDefaultOptions
-        };
-
-        const boomBustCtx = document.getElementById('boomBustChart');
-        if (boomBustCtx) {
-            new Chart(boomBustCtx, {
-                type: 'line',
-                data: {
-                    labels: ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 6', 'Day 7'],
-                    datasets: [{
-                        label: 'Activity Level',
-                        data: [2, 8, 3, 9, 2, 7, 3],
-                        borderColor: palette.red,
-                        backgroundColor: 'rgba(239, 71, 111, 0.2)',
-                        fill: true,
-                        tension: 0.4
-                    }]
-                },
-                options: commonLineOptions
+        /**
+         * Simple HTML escaping function to prevent XSS.
+         * @param {string} str - The string to escape.
+         * @returns {string} - The escaped string.
+         */
+        function escapeHTML(str) {
+            if (typeof str !== 'string') {
+                return '';
+            }
+            return str.replace(/[&<>"']/g, function(match) {
+                return {
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#39;'
+                }[match];
             });
+        }
+
+        // --- CSV Export Logic ---
+
+        /**
+         * Downloads the contents of the results table as a CSV file.
+         */
+        function downloadCSV() {
+            let csv = [];
+            const headers = Array.from(document.querySelectorAll("#resultsTable thead th"))
+                .map(th => `"${th.textContent}"`)
+                .join(',');
+            
+            csv.push(headers);
+
+            const rows = document.querySelectorAll("#resultsTable tbody tr");
+            
+            let currentOrg = "";
+
+            for (const row of rows) {
+                const cells = row.querySelectorAll("td");
+                let rowData = [];
+                
+                // Handle rowspan for organization name
+                if (cells.length === 6) { // OrgName, Opp, Vendor, TargetOrgs, Justification, Funding
+                    currentOrg = cells[0].textContent;
+                    rowData.push(`"${currentOrg}"`);
+                    rowData.push(`"${cells[1].textContent}"`);
+                    rowData.push(`"${cells[2].textContent}"`);
+                    rowData.push(`"${cells[3].textContent}"`);
+                    rowData.push(`"${cells[4].textContent}"`);
+                    rowData.push(`"${cells[5].textContent}"`);
+                } else if (cells.length === 5) { // Opp, Vendor, TargetOrgs, Justification, Funding
+                    rowData.push(`"${currentOrg}"`); // Use the stored org name
+                    rowData.push(`"${cells[0].textContent}"`);
+                    rowData.push(`"${cells[1].textContent}"`);
+                    rowData.push(`"${cells[2].textContent}"`);
+                    rowData.push(`"${cells[3].textContent}"`);
+                    rowData.push(`"${cells[4].textContent}"`);
+                } else if (cells.length === 1) {
+                    // This is likely a "no results" row
+                    const orgName = cells[0].textContent;
+                    rowData.push(`"${orgName}"`);
+                    rowData.push("\"No specific opportunities identified.\"");
+                    rowData.push("\"\""); // Vendor
+                    rowData.push("\"\""); // TargetOrgs
+                    rowData.push("\"\""); // Justification
+                    rowData.push("\"\""); // Funding
+                }
+
+                if(rowData.length > 0) {
+                     csv.push(rowData.join(','));
+                }
+            }
+
+            const csvContent = "data:text/csv;charset=utf-8," + csv.join("\n");
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "gsi_opportunity_analysis.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // --- Campaign Generation Logic ---
+
+        /**
+         * Handles the click event for the "Suggest Campaigns" button.
+         */
+        async function handleCampaignGeneration() {
+            if (!getApiKey()) {
+                settingsModal.classList.remove('hidden');
+                apiKeyInput.focus();
+                return;
+            }
+            if (currentAnalysisResults.length === 0) {
+                showError("Please run an analysis first before generating campaigns.");
+                return;
+            }
+
+            // Show modal and loader
+            campaignModal.classList.remove('hidden');
+            campaignLoader.classList.remove('hidden');
+            campaignContent.classList.add('hidden');
+            exportCampaignButton.classList.add('hidden'); // NEW: Hide export button initially
+            currentCampaignSuggestions = {}; // NEW: Clear previous suggestions
+            
+            // Reset tab visibility before making the call
+            if (campaignTabsContainer) {
+                campaignTabsContainer.classList.remove('hidden');
+            }
+            switchTab('group'); // Default to group tab
+            
+            const industryVertical = (currentInputMode === 'industry') ? industryVerticalSelect.value : 'None';
+            const productVendorList = productVendorsInput.value; // Get vendor list
+
+            try {
+                // Pass currentInputMode and productVendorList to the campaign fetch function
+                const suggestions = await fetchCampaignSuggestions(currentAnalysisResults, industryVertical, currentInputMode, productVendorList);
+                
+                currentCampaignSuggestions = suggestions; // NEW: Store suggestions
+                
+                // NEW: Check the structure of the response
+                if (suggestions.opportunityCampaigns) {
+                    // This is an Industry Mode response
+                    renderOpportunityCampaigns(suggestions.opportunityCampaigns);
+                } else if (suggestions.groupCampaign) {
+                    // This is an Organization Mode response
+                    renderCampaignContent(suggestions.groupCampaign, suggestions.abmCampaigns);
+                } else {
+                    throw new Error("Received an unexpected campaign suggestion format.");
+                }
+                
+                campaignLoader.classList.add('hidden');
+                campaignContent.classList.remove('hidden');
+                exportCampaignButton.classList.remove('hidden'); // NEW: Show export button
+
+            } catch (error) {
+                campaignModal.classList.add('hidden');
+                showError(`Failed to generate campaign ideas: ${error.message}`);
+            }
+        }
+
+        /**
+         * Fetches campaign suggestions from the Gemini API.
+         * @param {Array<object>} analysisData - The results from the initial analysis.
+         * @param {string} industryVertical - The selected industry vertical.
+         * @param {string} inputMode - The current mode ('organization' or 'industry').
+         * @param {string} productVendorList - The list of vendors.
+         * @returns {Promise<object>} - A promise that resolves to campaign suggestions.
+         */
+        async function fetchCampaignSuggestions(analysisData, industryVertical, inputMode, productVendorList) {
+            const systemPrompt = `You are an expert GSI (Global Systems Integrator) marketing strategist. Your task is to generate marketing campaign ideas based on a list of identified opportunities.
+
+            RULES:
+            1.  Your response MUST be a single, valid JSON object. Do NOT include markdown fences (like \`\`\`json).
+            2.  Read the 'inputMode' from the user prompt.
+            3.  IF 'inputMode' is 'organization':
+                - Return a JSON object with keys "groupCampaign" (object) and "abmCampaigns" (array).
+                - "groupCampaign" structure: { "theme": "...", "format": "...", "organizers": "...", "collaborationVendor": "..." }.
+                - "abmCampaigns" array structure: [{ "organizationName": "...", "theme": "...", "format": "...", "organizers": "...", "collaborationVendor": "..." }].
+            4.  IF 'inputMode' is 'industry':
+                - Return a JSON object with a SINGLE key: "opportunityCampaigns" (array).
+                - For EACH opportunity in the 'analysisData', create an object in the 'opportunityCampaigns' array.
+                - This object must contain the original 'description' and a new 'campaign' object: { "description": "...", "campaign": { "theme": "...", "format": "...", "organizers": "...", "collaborationVendor": "...", "targetOrganizations": [...] } }.
+            5.  THEME: MUST be vendor-agnostic and focus on SI value (e.g., "Accelerating AI-Driven Transformation," "Building a Resilient & Secure Digital Core").
+            6.  FORMAT: Suggest a high-level format (e.g., "Executive Roundtable (Invite-Only)," "Strategic Whitepaper & Webinar Series").
+            7.  ORGANIZERS: Suggest 1-2 types of event organizers (e.g., "A leading industry analyst firm (Gartner, Forrester)," "In-house, in partnership with hyperscaler").
+            8.  COLLABORATION VENDOR: From the 'Product Vendor List', select ONE vendor that best aligns with the campaign theme for a co-branded event.
+            9.  TARGET ORGANIZATIONS (for Industry Mode): The input 'analysisData' contains a 'targetOrganizations' list for each opportunity. You MUST copy this list into the 'targetOrganizations' field in your response's 'campaign' object.
+            10. INDUSTRY: If an 'industryVertical' is provided, use it to tailor all themes.`;
+            
+            const userPrompt = `Here is the analysis data. Use this to generate the campaign suggestions based on the rules.
+            
+            Input Mode: ${inputMode}
+            Industry Vertical Context: ${industryVertical}
+            Product Vendor List (for 'collaborationVendor' selection): ${productVendorList}
+            Analysis Results: ${JSON.stringify(analysisData)}
+            `;
+
+            const payload = {
+                contents: [{ parts: [{ text: userPrompt }] }],
+                systemInstruction: { parts: [{ text: systemPrompt }] },
+                // No tools needed, we are analyzing existing data.
+            };
+
+            const response = await fetchWithBackoff(getApiUrl(), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            const result = await response.json();
+            const jsonText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+
+            if (!jsonText) {
+                // Check for block reason
+                const blockReason = result.promptFeedback?.blockReason;
+                if (blockReason) {
+                    throw new Error(`Campaign generation was blocked: ${blockReason}`);
+                }
+                throw new Error(`Failed to get a valid response for campaign ideas.`);
+            }
+
+            try {
+                // Clean up potential markdown fences
+                const cleanedJsonText = jsonText
+                    .replace(/^```json\n?/, '')
+                    .replace(/\n?```$/, '');
+                
+                return JSON.parse(cleanedJsonText);
+
+            } catch (e) {
+                console.error("Failed to parse campaign JSON response:", jsonText);
+                throw new Error(`Failed to parse campaign JSON response from API: ${e.message}`);
+            }
+        }
+
+        /**
+         * Renders the campaign suggestions in the modal.
+         * @param {object} groupCampaign - The group campaign object.
+         * @param {Array<object>} abmCampaigns - The array of ABM campaign objects.
+         */
+        function renderCampaignContent(groupCampaign, abmCampaigns) {
+            // Ensure tabs are visible (for org mode)
+            if (campaignTabsContainer) {
+                campaignTabsContainer.classList.remove('hidden');
+            }
+            
+            // Render Group Campaign
+            groupCampaignContent.innerHTML = formatCampaignCard("Broad Group Campaign", groupCampaign);
+
+            // Render ABM Campaigns
+            abmCampaignContent.innerHTML = abmCampaigns.map(campaign => 
+                formatCampaignCard(campaign.organizationName, campaign)
+            ).join('');
         }
         
-        const pacingCtx = document.getElementById('pacingChart');
-        if (pacingCtx) {
-            new Chart(pacingCtx, {
-                type: 'line',
-                data: {
-                    labels: ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 6', 'Day 7'],
-                    datasets: [{
-                        label: 'Activity Level',
-                        data: [2, 2.5, 3, 3.5, 4, 4.5, 5],
-                        borderColor: palette.green,
-                        backgroundColor: 'rgba(6, 214, 160, 0.2)',
-                        fill: true,
-                        tension: 0.4
-                    }]
-                },
-                options: commonLineOptions
-            });
+        /**
+         * NEW: Renders campaign suggestions for each opportunity (Industry Mode).
+         * @param {Array<object>} opportunityCampaigns - Array of { description, campaign }
+         */
+        function renderOpportunityCampaigns(opportunityCampaigns) {
+            // Hide the tabs
+            if (campaignTabsContainer) {
+                campaignTabsContainer.classList.add('hidden');
+            }
+            
+            // Generate the HTML
+            const contentHTML = opportunityCampaigns.map(item => 
+                formatOpportunityCampaignCard(item)
+            ).join('');
+            
+            // Put content in the first tab pane and make sure it's visible
+            groupCampaignContent.innerHTML = contentHTML;
+            abmCampaignContent.innerHTML = ''; // Clear other tab
+            
+            groupCampaignContent.classList.remove('hidden');
+            abmCampaignContent.classList.add('hidden');
         }
-    });
-</script>
 
+        /**
+         * Helper function to create the HTML for a campaign suggestion card.
+         * @param {string} title - The title for the card (e.g., org name).
+         * @param {object} campaign - The campaign object { theme, format, organizers }.
+         * @returns {string} - HTML string for the card.
+         */
+        function formatCampaignCard(title, campaign) {
+            return `
+                <div class="bg-gray-700 rounded-lg p-4 mb-4 shadow-md">
+                    <h4 class="text-lg font-semibold text-white mb-3">${escapeHTML(title)}</h4>
+                    <div class="space-y-2">
+                        <p class="text-sm text-gray-300"><strong class="font-medium text-gray-100">Theme:</strong> ${escapeHTML(campaign.theme)}</p>
+                        <p class="text-sm text-gray-300"><strong class="font-medium text-gray-100">Format:</strong> ${escapeHTML(campaign.format)}</p>
+                        <p class="text-sm text-gray-300"><strong class="font-medium text-gray-100">Organizers:</strong> ${escapeHTML(campaign.organizers)}</p>
+                        <p class="text-sm text-gray-300"><strong class="font-medium text-gray-100">Suggested Vendor:</strong> ${escapeHTML(campaign.collaborationVendor)}</p>
+                    </div>
+                </div>
+            `;
+        }
+        
+        /**
+         * NEW: Helper function to create HTML for an opportunity-linked campaign.
+         * @param {object} item - The object { description, campaign }
+         * @returns {string} - HTML string for the card.
+         */
+        function formatOpportunityCampaignCard(item) {
+            if (!item || !item.campaign) {
+                return '<div class="bg-gray-700 rounded-lg p-4 mb-4 shadow-md"><p class="text-sm text-red-400">Error: Invalid campaign format received.</p></div>';
+            }
+            
+            // Handle targetOrganizations array
+            const targetOrgs = Array.isArray(item.campaign.targetOrganizations)
+                ? item.campaign.targetOrganizations
+                : (typeof item.campaign.targetOrganizations === 'string' ? [item.campaign.targetOrganizations] : []);
+            const escapedTargetOrgs = escapeHTML(targetOrgs.join(', '));
+            
+            return `
+                <div class="bg-gray-700 rounded-lg p-4 mb-4 shadow-md space-y-3">
+                    <div>
+                        <h4 class="text-sm font-semibold text-blue-300 mb-1">Opportunity:</h4>
+                        <p class="text-sm text-gray-300">${escapeHTML(item.description)}</p>
+                    </div>
+                    <div class="border-t border-gray-600 pt-3">
+                        <h5 class="text-sm font-semibold text-purple-300 mb-1">Campaign Idea:</h5>
+                        <div class="space-y-1 pl-2">
+                            <p class="text-sm text-gray-300"><strong class="font-medium text-gray-100">Theme:</strong> ${escapeHTML(item.campaign.theme)}</p>
+                            <p class="text-sm text-gray-300"><strong class="font-medium text-gray-100">Format:</strong> ${escapeHTML(item.campaign.format)}</p>
+                            <p class="text-sm text-gray-300"><strong class="font-medium text-gray-100">Organizers:</strong> ${escapeHTML(item.campaign.organizers)}</p>
+                            <p class="text-sm text-gray-300"><strong class="font-medium text-gray-100">Suggested Vendor:</strong> ${escapeHTML(item.campaign.collaborationVendor)}</p>
+                            <p class="text-sm text-gray-300"><strong class="font-medium text-gray-100">Target Organizations:</strong> ${escapedTargetOrgs}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        /**
+         * Switches the visible tab in the campaign modal.
+         * @param {'group' | 'abm'} tabName - The name of the tab to switch to.
+         */
+        function switchTab(tabName) {
+            if (tabName === 'group') {
+                groupCampaignTab.classList.add('active');
+                abmCampaignTab.classList.remove('active');
+                groupCampaignContent.classList.remove('hidden');
+                abmCampaignContent.classList.add('hidden');
+            } else {
+                groupCampaignTab.classList.remove('active');
+                abmCampaignTab.classList.add('active');
+                groupCampaignContent.classList.add('hidden');
+                abmCampaignContent.classList.remove('hidden');
+            }
+        }
+        
+        /**
+         * NEW: Downloads the generated campaign suggestions as a rich JSON file.
+         */
+        function downloadCampaignJSON() {
+            if (!currentCampaignSuggestions || Object.keys(currentCampaignSuggestions).length === 0) {
+                showError("No campaign data to export.");
+                return;
+            }
+
+            // Create the rich export object
+            const exportData = {
+                metadata: {
+                    analysisMode: currentInputMode,
+                    industryVertical: industryVerticalSelect.value,
+                    region: regionInput.value.trim() || 'None',
+                    hyperscaler: hyperscalerSelect.value,
+                    aiPlatform: aiPlatformSelect.value,
+                    exportTimestamp: new Date().toISOString()
+                },
+                campaigns: []
+            };
+
+            try {
+                if (currentInputMode === 'organization') {
+                    // 1. Add Group Campaign
+                    if (currentCampaignSuggestions.groupCampaign) {
+                        exportData.campaigns.push({
+                            type: "Broad Group",
+                            campaignDetails: currentCampaignSuggestions.groupCampaign,
+                            context: {
+                                // Provide a list of all organizations this group campaign applies to
+                                targetOrganizations: currentAnalysisResults.map(org => org.orgName)
+                            }
+                        });
+                    }
+
+                    // 2. Add ABM Campaigns
+                    if (currentCampaignSuggestions.abmCampaigns) {
+                        currentCampaignSuggestions.abmCampaigns.forEach(abmCampaign => {
+                            // Find the full analysis context for this org
+                            const orgContext = currentAnalysisResults.find(org => org.orgName === abmCampaign.organizationName);
+                            exportData.campaigns.push({
+                                type: "Account-Based (ABM)",
+                                campaignDetails: abmCampaign,
+                                // Provide the full opportunity list for this org as context
+                                context: {
+                                    organizationName: abmCampaign.organizationName,
+                                    opportunities: orgContext ? orgContext.opportunities : []
+                                }
+                            });
+                        });
+                    }
+                } else { // 'industry' mode
+                    // 3. Add Industry Opportunity Campaigns
+                    if (currentCampaignSuggestions.opportunityCampaigns) {
+                        const opportunitiesContext = currentAnalysisResults[0]?.opportunities || [];
+                        
+                        currentCampaignSuggestions.opportunityCampaigns.forEach((campaignItem, index) => {
+                            // Match campaign with its original opportunity context by index
+                            const opportunityContext = opportunitiesContext[index]; 
+                            
+                            if (opportunityContext) {
+                                exportData.campaigns.push({
+                                    type: "Industry Opportunity",
+                                    campaignDetails: campaignItem.campaign,
+                                    // Provide the full opportunity data as context
+                                    context: opportunityContext 
+                                });
+                            }
+                        });
+                    }
+                }
+
+                // Create and download the JSON file
+                const jsonContent = JSON.stringify(exportData, null, 2); // Pretty print
+                const blob = new Blob([jsonContent], { type: "application/json;charset=utf-8," });
+                const encodedUri = URL.createObjectURL(blob);
+                const link = document.createElement("a");
+                link.setAttribute("href", encodedUri);
+                link.setAttribute("download", "gsi_campaign_export.json");
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(encodedUri); // Clean up the URL object
+
+            } catch (error) {
+                showError(`Failed to create JSON export: ${error.message}`);
+                console.error(error);
+            }
+        }
+        
+    </script>
 </body>
 </html>
