@@ -19,8 +19,8 @@ app.use((req, res, next) => {
 
 const anthropic = new Anthropic({
     apiKey: process.env.ANTHROPIC_API_KEY,
-    timeout: 0,  // disable SDK-level timeout; adaptive thinking goes silent during reasoning phases
-                 // rely on the server-level 300s timeout set above
+    timeout: 900_000,  // 15 min explicit — timeout:0 is falsy and falls back to SDK default 600s
+    maxRetries: 0,     // we handle retries ourselves
 });
 
 const SYSTEM_PROMPT = `You are an elite sales strategist for HCLTech Digital Business Services (DBS), ANZ region. You help the HCLTech ANZ sales team identify, prioritise, and win digital transformation opportunities by mapping client needs to HCLTech's specific partner ecosystem.
@@ -263,7 +263,11 @@ app.post('/api/analyze', async (req, res) => {
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Connection', 'keep-alive');
+    res.setHeader('X-Accel-Buffering', 'no');  // disable nginx buffering on Render
     res.flushHeaders();
+
+    // Global keepalive — starts immediately so Render's proxy never sees an idle connection
+    const globalKa = setInterval(() => res.write(': ping\n\n'), 10_000);
 
     const vendorList = vendors || 'STRATEGIC FY27: Pega, Workato, Palantir, Databricks, Snowflake, Camunda | TRENDING: Appian, Denodo, Kong, TIBCO, Qlik/Talend, Sitecore | OTHER: Adobe, MuleSoft, Boomi, Alteryx, Informatica, Software AG, OutSystems, BlueYonder, Solace, DataRobot, Acquia, MongoDB, Confluent, Cornerstone | CLOUD: AWS (Power of Three anchor)';
 
@@ -277,7 +281,6 @@ app.post('/api/analyze', async (req, res) => {
                 `largest most important companies in ${industry} industry${region ? ` ${region}` : ''} 2024 digital transformation leaders`,
                 8
             );
-            const ka = setInterval(() => res.write(': keepalive\n\n'), 15_000);
             try {
                 const msg = await anthropic.messages.create({
                     model: 'claude-opus-4-7',
@@ -291,8 +294,6 @@ app.post('/api/analyze', async (req, res) => {
                 const text = msg.content.find(b => b.type === 'text')?.text || '[]';
                 const match = text.match(/\[[\s\S]*\]/);
                 orgList = JSON.parse(match ? match[0] : '[]').slice(0, 20);
-            } finally {
-                clearInterval(ka);
             }
             if (!orgList.length) orgList = [`${industry} sector`];
             sendEvent(res, 'discovered', { orgs: orgList });
@@ -307,7 +308,6 @@ app.post('/api/analyze', async (req, res) => {
                 const research = await researchOrg(orgName);
                 sendEvent(res, 'progress', { org: orgName, status: 'analysing' });
 
-                const ka = setInterval(() => res.write(': keepalive\n\n'), 15_000);
                 let result;
                 const callClaude = async (prompt) => {
                     const stream = await anthropic.messages.stream({
@@ -412,8 +412,6 @@ Return ONLY the JSON object.`;
                         talkingPoints: [],
                         nextActions: [],
                     };
-                } finally {
-                    clearInterval(ka);
                 }
                 sendEvent(res, 'result', { org: orgName, data: result });
             }));
@@ -422,6 +420,8 @@ Return ONLY the JSON object.`;
         sendEvent(res, 'done', { total: orgList.length });
     } catch (err) {
         sendEvent(res, 'error', { message: err.message });
+    } finally {
+        clearInterval(globalKa);
     }
     res.end();
 });
