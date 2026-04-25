@@ -610,12 +610,237 @@ function esc(s) {
     .replace(/'/g, '&#39;');
 }
 
-// ── STUB placeholders (filled in Sub-task 3 & 4) ─────────────
-function renderDetail()  { /* Sub-task 3 */ }
-function renderTabBody() { /* Sub-task 3 */ }
-function exportExcel()   { /* Sub-task 4 */ }
-function exportBrief()   { /* Sub-task 4 */ }
-// ── END SUB-TASK 2 ────────────────────────────────────────────
+// ── DETAIL VIEW ───────────────────────────────────────────────
+function renderDetail() {
+  if (!S.selectedOrg) return;
+  const r = S.results.get(S.selectedOrg);
+  if (!r) return;
+
+  const dv = document.getElementById('detailView');
+  dv.classList.add('visible');
+
+  // Header
+  const initials = (r.orgName || '?').split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase();
+  const score    = r.overallScore || 0;
+  const sc       = score >= 8 ? 'score-high' : score >= 5 ? 'score-med' : 'score-low';
+  const hasResell = r.opportunities?.some(o => o.resellOpportunity);
+  document.getElementById('detailHdr').innerHTML = `
+    <div class="detail-logo" id="dlogo">
+      ${r.logoUrl
+        ? `<img src="${esc(r.logoUrl)}" alt="" onerror="this.parentElement.textContent='${initials}'">`
+        : initials}
+    </div>
+    <div style="min-width:0">
+      <div class="detail-org">${esc(r.orgName)}</div>
+      ${r.website ? `<a href="${esc(r.website)}" target="_blank" rel="noopener"
+          style="font-size:.76rem;color:var(--blue)">${esc(r.website)}</a>` : ''}
+      <div class="detail-summary" style="margin-top:7px">${esc(r.executiveSummary || '')}</div>
+    </div>
+    <div class="detail-right">
+      <div class="score-big score-pill ${sc}" style="background:none;padding:0;font-size:2.1rem">
+        ${score}<span style="font-size:1rem;color:var(--muted)">/10</span>
+      </div>
+      <div class="score-lbl">Opportunity Score</div>
+      ${hasResell ? '<div class="resell-tag">Resell opportunity</div>' : ''}
+    </div>`;
+
+  // Stats bar
+  const stats = [
+    ['Industry',      r.profile?.industry  || '—'],
+    ['Employees',     r.profile?.employees || '—'],
+    ['Revenue',       r.profile?.revenue   || '—'],
+    ['HQ',            r.profile?.hq        || '—'],
+    ['Opportunities', r.opportunities?.length ?? 0],
+    ['Technologies',  r.techStack?.length  ?? 0],
+  ];
+  document.getElementById('statsBar').innerHTML = stats.map(([l,v]) =>
+    `<div class="stat-cell"><div class="stat-val">${esc(String(v))}</div><div class="stat-lbl">${l}</div></div>`
+  ).join('');
+
+  // Tabs
+  const tabs = [
+    { id: 'overview',      label: 'Overview' },
+    { id: 'opportunities', label: `Opportunities (${r.opportunities?.length || 0})` },
+    { id: 'techstack',     label: `Tech Stack (${r.techStack?.length || 0})` },
+    { id: 'leadership',    label: `Leadership (${r.leadership?.length || 0})` },
+    { id: 'intelligence',  label: `Intelligence (${(r.recentNews?.length||0)+(r.maActivity?.length||0)})` },
+  ];
+  document.getElementById('tabsRow').innerHTML = tabs.map(t =>
+    `<button class="tab-btn ${S.activeTab===t.id?'active':''}" data-tab="${t.id}"
+             onclick="selectTab('${t.id}')">${t.label}</button>`
+  ).join('');
+
+  renderTabBody();
+  dv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// ── TAB BODY DISPATCHER ───────────────────────────────────────
+function renderTabBody() {
+  const r  = S.results.get(S.selectedOrg);
+  if (!r) return;
+  const el = document.getElementById('tabBody');
+  el.classList.remove('fade-in');
+  void el.offsetWidth;
+  el.classList.add('fade-in');
+  switch (S.activeTab) {
+    case 'overview':      el.innerHTML = tabOverview(r);      break;
+    case 'opportunities': el.innerHTML = tabOpportunities(r); break;
+    case 'techstack':     el.innerHTML = tabTechStack(r);     break;
+    case 'leadership':    el.innerHTML = tabLeadership(r);    break;
+    case 'intelligence':  el.innerHTML = tabIntelligence(r);  break;
+  }
+}
+
+// ── TAB: OVERVIEW ─────────────────────────────────────────────
+function tabOverview(r) {
+  const fields = [
+    ['Industry', r.profile?.industry], ['Revenue',  r.profile?.revenue],
+    ['Employees',r.profile?.employees],['HQ',       r.profile?.hq],
+    ['Founded',  r.profile?.founded],  ['Website',  r.profile?.website],
+  ].filter(([,v]) => v);
+
+  const infoCards = fields.map(([l,v]) => `
+    <div class="info-card">
+      <div class="info-lbl">${l}</div>
+      <div class="info-val">${l==='Website'
+        ? `<a href="${esc(v)}" target="_blank" rel="noopener">${esc(v)}</a>`
+        : esc(v)}</div>
+    </div>`).join('');
+
+  const talking = (r.talkingPoints||[]).map(t=>`<li>${esc(t)}</li>`).join('') ||
+    '<li style="opacity:.45">None identified</li>';
+  const actions = (r.nextActions||[]).map(a=>`<li>${esc(a)}</li>`).join('') ||
+    '<li style="opacity:.45">None identified</li>';
+
+  return `
+    <div class="sec-label">Company Profile</div>
+    ${r.profile?.description ? `<p class="desc-text">${esc(r.profile.description)}</p>` : ''}
+    <div class="info-grid">${infoCards}</div>
+    <div class="two-col" style="margin-top:16px">
+      <div>
+        <div class="sec-label">Talking Points</div>
+        <ul class="bullet-list">${talking}</ul>
+      </div>
+      <div>
+        <div class="sec-label">Recommended Next Actions</div>
+        <ul class="bullet-list">${actions}</ul>
+      </div>
+    </div>`;
+}
+
+// ── TAB: OPPORTUNITIES ────────────────────────────────────────
+function tabOpportunities(r) {
+  if (!r.opportunities?.length)
+    return `<div class="empty"><div class="empty-ico">🎯</div>No opportunities identified</div>`;
+
+  return r.opportunities.map(o => {
+    const sc = (o.score||0)>=8?'score-high':(o.score||0)>=5?'score-med':'score-low';
+    const tc = tierClass(o.partnerTier);
+    const vendors  = (o.vendors||[]).map(v=>`<span class="tag to">${esc(v)}</span>`).join('') ||
+      '<span style="color:var(--muted);font-size:.76rem">—</span>';
+    const services = (o.hclServices||[]).map(s=>`<span class="tag tb">${esc(s)}</span>`).join('') ||
+      '<span style="color:var(--muted);font-size:.76rem">—</span>';
+
+    const p3 = o.powerOfThree?.applicable ? `
+      <div class="p3-bar">
+        ⚡ <strong>Power of Three:</strong> ${esc(o.powerOfThree.combination||'')}
+        ${o.powerOfThree.proposition ? ` — ${esc(o.powerOfThree.proposition)}` : ''}
+      </div>` : '';
+
+    const compRisk = o.competitiveRisk
+      ? `<div class="comp-box">⚠ Competitive Risk: ${esc(o.competitiveRisk)}</div>` : '';
+
+    return `
+    <div class="opp-card">
+      <div class="opp-hdr">
+        <div class="opp-title">${esc(o.title)}</div>
+        <span class="tier-pill ${tc}">${esc(o.partnerTier||'Other')}</span>
+        <div class="opp-score score-pill ${sc}">${o.score||'?'}/10</div>
+        ${o.resellOpportunity ? '<span class="resell-tag">Resell</span>' : ''}
+      </div>
+      <p class="opp-desc">${esc(o.description)}</p>
+      <div class="opp-grid">
+        <div class="opp-field"><div class="opp-flbl">Business Value</div><div class="opp-fval">${esc(o.businessValue||'—')}</div></div>
+        <div class="opp-field"><div class="opp-flbl">Urgency Driver</div><div class="opp-fval">${esc(o.urgencyDriver||'—')}</div></div>
+        <div class="opp-field"><div class="opp-flbl">Economic Buyer</div><div class="opp-fval">${esc(o.economicBuyer||'—')}</div></div>
+        <div class="opp-field"><div class="opp-flbl">Technical Buyer</div><div class="opp-fval">${esc(o.technicalBuyer||'—')}</div></div>
+        <div class="opp-field"><div class="opp-flbl">Funding Source</div><div class="opp-fval">${esc(o.fundingSource||'—')}</div></div>
+      </div>
+      <div class="tags-row"><span class="t-lbl">Vendors:</span>${vendors}</div>
+      <div class="tags-row"><span class="t-lbl">HCLTech Services:</span>${services}</div>
+      ${p3}${compRisk}
+    </div>`;
+  }).join('');
+}
+
+// ── TAB: TECH STACK ───────────────────────────────────────────
+function tabTechStack(r) {
+  if (!r.techStack?.length)
+    return `<div class="empty"><div class="empty-ico">🔧</div>No tech stack data available</div>`;
+  return `
+    <div class="sec-label">Technology Stack — ${r.techStack.length} technologies identified</div>
+    <div class="tag-cloud">${r.techStack.map(t=>`<span class="tech-tag">${esc(t)}</span>`).join('')}</div>`;
+}
+
+// ── TAB: LEADERSHIP ───────────────────────────────────────────
+function tabLeadership(r) {
+  if (!r.leadership?.length)
+    return `<div class="empty"><div class="empty-ico">👤</div>No leadership data available</div>`;
+  const cards = r.leadership.map(p => {
+    const av = (p.name||'?').split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase();
+    return `
+    <div class="person-card">
+      <div class="person-av">${av}</div>
+      <div>
+        <div class="person-name">${esc(p.name||'—')}</div>
+        <div class="person-title">${esc(p.title||'—')}</div>
+        ${p.linkedin
+          ? `<a href="${esc(p.linkedin)}" target="_blank" rel="noopener"
+               style="font-size:.73rem;color:var(--blue);margin-top:4px;display:inline-block">LinkedIn →</a>`
+          : ''}
+      </div>
+    </div>`;
+  }).join('');
+  return `
+    <div class="sec-label">Key Contacts — ${r.leadership.length} identified</div>
+    <div class="people-grid">${cards}</div>`;
+}
+
+// ── TAB: INTELLIGENCE ─────────────────────────────────────────
+function tabIntelligence(r) {
+  let html = '';
+
+  if (r.recentNews?.length) {
+    const items = r.recentNews.map(n => `
+      <div class="news-item">
+        <div class="news-hl">${esc(n.headline)}</div>
+        ${n.date ? `<div class="news-date">${esc(n.date)}</div>` : ''}
+        <div class="news-sig">${esc(n.significance)}</div>
+        ${n.url ? `<a href="${esc(n.url)}" target="_blank" rel="noopener"
+            style="font-size:.73rem;color:var(--blue);margin-top:4px;display:inline-block">Source →</a>` : ''}
+      </div>`).join('');
+    html += `<div class="sec-label">Recent News & Developments (${r.recentNews.length})</div>
+             <div class="news-list">${items}</div>`;
+  }
+
+  if (r.maActivity?.length) {
+    const items = r.maActivity.map(m => `
+      <div class="ma-item">
+        <div class="ma-event">${esc(m.event)}</div>
+        ${m.date ? `<div class="news-date">${esc(m.date)}</div>` : ''}
+        <div class="ma-impl">${esc(m.implication)}</div>
+      </div>`).join('');
+    html += `<div class="sec-label" style="margin-top:22px">M&amp;A Activity (${r.maActivity.length})</div>${items}`;
+  }
+
+  return html ||
+    `<div class="empty"><div class="empty-ico">📰</div>No intelligence data available</div>`;
+}
+
+// ── EXPORT STUBS (filled in Sub-task 4) ──────────────────────
+function exportExcel() { /* Sub-task 4 */ }
+function exportBrief() { /* Sub-task 4 */ }
+// ── END SUB-TASK 3 ────────────────────────────────────────────
 </script>
 </body>
 </html>
