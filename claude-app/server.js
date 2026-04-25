@@ -294,6 +294,8 @@ app.post('/api/analyze', async (req, res) => {
                 const text = msg.content.find(b => b.type === 'text')?.text || '[]';
                 const match = text.match(/\[[\s\S]*\]/);
                 orgList = JSON.parse(match ? match[0] : '[]').slice(0, 20);
+            } catch {
+                orgList = [];
             }
             if (!orgList.length) orgList = [`${industry} sector`];
             sendEvent(res, 'discovered', { orgs: orgList });
