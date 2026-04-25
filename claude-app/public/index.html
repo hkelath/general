@@ -837,10 +837,68 @@ function tabIntelligence(r) {
     `<div class="empty"><div class="empty-ico">📰</div>No intelligence data available</div>`;
 }
 
-// ── EXPORT STUBS (filled in Sub-task 4) ──────────────────────
-function exportExcel() { /* Sub-task 4 */ }
-function exportBrief() { /* Sub-task 4 */ }
-// ── END SUB-TASK 3 ────────────────────────────────────────────
+// ── EXPORTS ───────────────────────────────────────────────────
+async function exportExcel() {
+  const results = [...S.results.values()];
+  if (!results.length) return;
+  const btn = event?.currentTarget;
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Generating…'; }
+  try {
+    const res = await fetch('/api/export/excel', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ results }),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    downloadBlob(await res.blob(),
+      `HCLTech-Sales-Intelligence-${isoDate()}.xlsx`);
+  } catch (err) {
+    alert(`Export failed: ${err.message}`);
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = '📊 Export Excel'; }
+  }
+}
+
+async function exportBrief(format) {
+  if (!S.selectedOrg) return;
+  const result = S.results.get(S.selectedOrg);
+  if (!result) return;
+  const btn = event?.currentTarget;
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Building…'; }
+  try {
+    const res = await fetch('/api/export/brief', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ result, format }),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const safe = result.orgName.replace(/[^a-z0-9]/gi, '_');
+    const ext  = format === 'text' ? 'txt' : 'html';
+    const label = format === 'text' ? 'Brief' : 'Slides';
+    downloadBlob(await res.blob(), `${safe}-${label}.${ext}`);
+  } catch (err) {
+    alert(`Export failed: ${err.message}`);
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = format === 'text' ? '📄 Text Brief' : '🖨 Slide Deck';
+    }
+  }
+}
+
+function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a   = Object.assign(document.createElement('a'), { href: url, download: filename });
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+}
+
+function isoDate() {
+  return new Date().toISOString().slice(0, 10);
+}
+// ── END ───────────────────────────────────────────────────────
 </script>
 </body>
 </html>
