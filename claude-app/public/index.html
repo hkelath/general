@@ -533,6 +533,7 @@ function onSSE(type, data) {
       const partial = {
         orgName:          data.org,
         _partial:         true,
+        _jobItems:        data.jobItems || [],
         logoUrl:          data.profile?.logo || null,
         website:          data.profile?.website || null,
         executiveSummary: '⏳ Claude Opus 4.7 is reasoning — opportunities and GTM brief loading…',
@@ -547,6 +548,7 @@ function onSSE(type, data) {
           significance:'Full analysis loading…',
         })),
         maActivity:    [],
+        jobSignals:    [],
         opportunities: [],
         talkingPoints: [],
         nextActions:   [],
@@ -753,7 +755,7 @@ function renderDetail() {
     { id: 'opportunities', label: r._partial ? '⏳ Opportunities' : `Opportunities (${r.opportunities?.length || 0})` },
     { id: 'techstack',     label: `Tech Stack (${r.techStack?.length || 0})` },
     { id: 'leadership',    label: `Leadership (${r.leadership?.length || 0})` },
-    { id: 'intelligence',  label: `Intelligence (${(r.recentNews?.length||0)+(r.maActivity?.length||0)})` },
+    { id: 'intelligence',  label: `Intelligence (${(r.recentNews?.length||0)+(r.maActivity?.length||0)+(r.jobSignals?.length||0)})` },
     ...(hasSources ? [{ id: 'sources', label: '🔬 Sources' }] : []),
   ];
   document.getElementById('tabsRow').innerHTML = tabs.map(t =>
@@ -913,6 +915,39 @@ function tabLeadership(r) {
 function tabIntelligence(r) {
   let html = '';
 
+  // ── Market Signals (job postings) ──
+  if (r.jobSignals?.length) {
+    // Full Claude-analysed signals
+    const urgencyColour = u => u === 'high' ? '#EF4444' : u === 'medium' ? '#F59E0B' : '#6B7280';
+    const cards = r.jobSignals.map(s => `
+      <div class="news-item" style="border-left-color:#8B5CF6">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+          <div class="news-hl" style="flex:1">${esc(s.rolePattern)}</div>
+          ${s.urgency ? `<span style="font-size:.7rem;font-weight:700;color:${urgencyColour(s.urgency)};text-transform:uppercase;letter-spacing:.5px">${esc(s.urgency)}</span>` : ''}
+        </div>
+        <div class="tags-row" style="margin-bottom:6px">
+          ${(s.techFocus||[]).map(t=>`<span class="tag" style="background:rgba(139,92,246,.12);color:#A78BFA;border:1px solid rgba(139,92,246,.3)">${esc(t)}</span>`).join('')}
+        </div>
+        <div class="news-sig">${esc(s.signal)}</div>
+        ${s.hclRelevance ? `<div style="margin-top:6px;font-size:.79rem;color:var(--orange)">→ HCLTech angle: ${esc(s.hclRelevance)}</div>` : ''}
+      </div>`).join('');
+    html += `<div class="sec-label">📡 Market Signals — Tech Hiring Patterns (${r.jobSignals.length})</div>
+             <div class="news-list">${cards}</div>`;
+  } else if (r._partial && r._jobItems?.length) {
+    // Partial state — show raw job posting links
+    const links = r._jobItems.map(j => `
+      <div class="news-item" style="border-left-color:#8B5CF6">
+        <div class="news-hl">${esc(j.title)}</div>
+        ${j.date ? `<div class="news-date">${esc(j.date)}</div>` : ''}
+        ${j.content ? `<div class="news-sig">${esc(j.content)}</div>` : ''}
+        ${j.url ? `<a href="${esc(j.url)}" target="_blank" rel="noopener"
+            style="font-size:.73rem;color:var(--blue);margin-top:5px;display:inline-block">🔗 View posting →</a>` : ''}
+      </div>`).join('');
+    html += `<div class="sec-label">📡 Tech Hiring Signals — raw data (Claude analysis loading…)</div>
+             <div class="news-list">${links}</div>`;
+  }
+
+  // ── News ──
   if (r.recentNews?.length) {
     const items = r.recentNews.map(n => `
       <div class="news-item">
@@ -922,10 +957,11 @@ function tabIntelligence(r) {
         ${n.url ? `<a href="${esc(n.url)}" target="_blank" rel="noopener"
             style="font-size:.73rem;color:var(--blue);margin-top:5px;display:inline-block">🔗 Read source →</a>` : ''}
       </div>`).join('');
-    html += `<div class="sec-label">Recent News & Developments (${r.recentNews.length})</div>
+    html += `<div class="sec-label" style="margin-top:${html ? 22 : 0}px">Recent News & Developments (${r.recentNews.length})</div>
              <div class="news-list">${items}</div>`;
   }
 
+  // ── M&A ──
   if (r.maActivity?.length) {
     const items = r.maActivity.map(m => `
       <div class="ma-item">

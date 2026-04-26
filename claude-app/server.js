@@ -207,15 +207,16 @@ async function apolloPeople(orgName) {
 
 // ── Parallel research for one org ─────────────────────────────────────────────
 async function researchOrg(name) {
-    const [news, tech, leadership, ma, strategy, [apollo, people]] = await Promise.all([
+    const [news, tech, leadership, ma, strategy, jobs, [apollo, people]] = await Promise.all([
         tavilySearch(`"${name}" news announcements strategy 2024 2025`, 5),
         tavilySearch(`"${name}" technology stack cloud platform software infrastructure`, 4),
         tavilySearch(`"${name}" CTO CIO CDO digital leadership executives`, 3),
         tavilySearch(`"${name}" acquisition merger partnership 2024 2025`, 3),
         tavilySearch(`"${name}" digital transformation challenges business growth`, 5),
+        tavilySearch(`"${name}" hiring jobs technology engineer developer cloud data AI 2024 2025`, 6),
         Promise.all([apolloEnrich(name), apolloPeople(name)]),
     ]);
-    return { news, tech, leadership, ma, strategy, apollo, people };
+    return { news, tech, leadership, ma, strategy, jobs, apollo, people };
 }
 
 function buildResearchContext(name, r) {
@@ -237,6 +238,7 @@ Keywords: ${r.apollo.keywords?.join(', ') || 'N/A'}`);
         ['Leadership', r.leadership],
         ['M&A Activity', r.ma],
         ['Business Strategy & Challenges', r.strategy],
+        ['Tech Hiring & Job Signals', r.jobs],
     ];
     for (const [label, d] of sections) {
         if (d?.answer) {
@@ -352,6 +354,9 @@ app.post('/api/analyze', async (req, res) => {
                     newsItems: (research.news?.results || []).slice(0, 6).map(r => ({
                         title: r.title, url: r.url, content: r.content, date: r.published_date,
                     })),
+                    jobItems: (research.jobs?.results || []).slice(0, 6).map(r => ({
+                        title: r.title, url: r.url, content: r.content?.slice(0, 300), date: r.published_date,
+                    })),
                     sources: {
                         apolloUsed: !!research.apollo,
                         apolloOrg:  research.apollo ? { name: research.apollo.name, website: research.apollo.website, linkedin: research.apollo.linkedin } : null,
@@ -361,6 +366,7 @@ app.post('/api/analyze', async (req, res) => {
                             { label: 'Leadership & Executives',  answer: research.leadership?.answer, results: (research.leadership?.results|| []).map(r => ({ title: r.title, url: r.url, date: r.published_date })) },
                             { label: 'M&A Activity',             answer: research.ma?.answer,         results: (research.ma?.results        || []).map(r => ({ title: r.title, url: r.url, date: r.published_date })) },
                             { label: 'Business Strategy',        answer: research.strategy?.answer,   results: (research.strategy?.results  || []).map(r => ({ title: r.title, url: r.url, date: r.published_date })) },
+                            { label: 'Tech Hiring Signals',      answer: research.jobs?.answer,        results: (research.jobs?.results      || []).map(r => ({ title: r.title, url: r.url, date: r.published_date })) },
                         ].filter(q => q.answer || q.results.length),
                     },
                 });
@@ -435,11 +441,22 @@ Return a single JSON object (no markdown fences) with this exact schema:
       "competitiveRisk": "string"
     }
   ],
+  "jobSignals": [
+    {
+      "rolePattern": "string — e.g. 'Cloud Data Engineers', 'GenAI Platform Architects'",
+      "techFocus": ["string — specific technologies/tools being hired for"],
+      "signal": "string — what this hiring pattern reveals about their tech strategy",
+      "hclRelevance": "string — how HCLTech can position against this hiring signal",
+      "urgency": "high | medium | low"
+    }
+  ],
   "talkingPoints": ["string"],
   "nextActions": ["string"]
 }
 
-IMPORTANT: Sort opportunities array — Strategic FY27 first, then Trending, then Other.
+IMPORTANT:
+- Sort opportunities array — Strategic FY27 first, then Trending, then Other.
+- For jobSignals: analyse the Tech Hiring & Job Signals research section. Each signal should represent a meaningful pattern (not a single job), and hclRelevance must directly map to a HCLTech service line or partner capability.
 Return ONLY the JSON object.`;
 
                     let message;
