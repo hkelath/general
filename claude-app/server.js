@@ -23,7 +23,7 @@ const anthropic = new Anthropic({
     maxRetries: 0,     // we handle retries ourselves
 });
 
-const SYSTEM_PROMPT = `You are an elite sales strategist for HCLTech Digital Business Services (DBS), ANZ region. You help the HCLTech ANZ sales team identify, prioritise, and win digital transformation opportunities by mapping client needs to HCLTech's specific partner ecosystem.
+const SYSTEM_PROMPT = `You are an elite sales strategist for HCLTech Digital Business Services (DBS), APAC region. You help the HCLTech APAC sales team identify, prioritise, and win digital transformation opportunities by mapping client needs to HCLTech's specific partner ecosystem.
 
 ━━━ HCLTech DBS Service Lines ━━━
 • Application Modernisation & Migration
@@ -36,7 +36,7 @@ const SYSTEM_PROMPT = `You are an elite sales strategist for HCLTech Digital Bus
 • Cybersecurity & Compliance
 • IoT & Engineering Services
 
-━━━ ANZ DBS Partner Ecosystem ━━━
+━━━ APAC DBS Partner Ecosystem ━━━
 
 STRATEGIC FY27 PARTNERS (highest priority — lead every GTM motion):
 ┌─────────────┬────────────────────────────┬──────────┬──────────────────────────────────────────────────┐
@@ -69,7 +69,7 @@ OutSystems (low-code), BlueYonder (supply chain), Solace (event mesh), DataRobot
 MongoDB (NoSQL/document DB), Confluent (streaming), Cornerstone (HCM/learning)
 
 ━━━ POWER OF THREE — AWS + HCLTech + Partner ━━━
-A core GTM motion in ANZ is the "Power of Three": HCLTech services + AWS cloud + a strategic partner, creating
+A core GTM motion in APAC is the "Power of Three": HCLTech services + AWS cloud + a strategic partner, creating
 a combined proposition stronger than any individual vendor. Key Power of Three combinations:
 
 • AWS + Databricks       → "AI Lakehouse on AWS" — migrate/modernise data estate, build GenAI use-cases
@@ -84,7 +84,7 @@ a combined proposition stronger than any individual vendor. Key Power of Three c
 Always flag when a Power of Three proposition is applicable. It amplifies deal size, brings AWS funding/support,
 and differentiates HCLTech from pure-play integrators.
 
-━━━ ANZ Known Accounts (do not propose for greenfield — focus on expansion/upsell) ━━━
+━━━ APAC Known Accounts (do not propose for greenfield — focus on expansion/upsell) ━━━
 Pega accounts: DTP, CBA, TfNSW | Workato: SRG, AGQS | Databricks: TfNSW, CBA | Snowflake: Elders
 Camunda: Coles, Telstra, NAB (target) | Appian: AIA | TIBCO: AusPost, Metcash | Qlik: Toll
 
@@ -420,7 +420,7 @@ Return a single JSON object (no markdown fences) with this exact schema:
       "partnerTier": "Strategic FY27 | Trending | Other",
       "description": "string",
       "businessValue": "string",
-      "vendors": ["string — must be from HCLTech ANZ partner list"],
+      "vendors": ["string — must be from HCLTech APAC partner list"],
       "hclServices": ["string"],
       "powerOfThree": {
         "applicable": true or false,
