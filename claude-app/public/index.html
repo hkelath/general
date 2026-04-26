@@ -219,6 +219,15 @@ a:hover{text-decoration:underline}
 .fade-in{animation:fadeIn .25s ease}
 @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 
+/* ── Tech Stack categorised ── */
+.tech-cat-grid{display:flex;flex-direction:column;gap:18px}
+.tech-cat-header{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;display:flex;align-items:center;gap:7px}
+.tech-cat-header::after{content:'';flex:1;height:1px;background:var(--border)}
+.tech-cards-row{display:flex;flex-wrap:wrap;gap:8px}
+.tech-card{border:1px solid;border-radius:8px;padding:8px 12px;min-width:160px;max-width:300px}
+.tech-card-name{font-size:.85rem;font-weight:700;margin-bottom:3px}
+.tech-card-rel{font-size:.75rem;color:var(--muted);line-height:1.45}
+
 @media(max-width:768px){
   .form-row{flex-direction:column}
   .info-grid{grid-template-columns:1fr 1fr}
@@ -685,7 +694,8 @@ function renderExportBar(all) {
       </button>`;
   } else {
     eb.innerHTML = `
-      <button class="btn btn-secondary btn-sm" onclick="exportBrief('slides')">🖨 Slide Deck</button>
+      <button class="btn btn-secondary btn-sm" onclick="exportPptx()" title="Download .pptx — opens in PowerPoint or Google Slides">📊 Export PPTX</button>
+      <button class="btn btn-secondary btn-sm" onclick="exportBrief('slides')">🖨 HTML Slides</button>
       <button class="btn btn-secondary btn-sm" onclick="exportBrief('text')">📄 Text Brief</button>`;
   }
 }
@@ -879,12 +889,65 @@ function tabOpportunities(r) {
 }
 
 // ── TAB: TECH STACK ───────────────────────────────────────────
+const TECH_CAT_COLORS = {
+  Cloud:       { bg:'rgba(0,173,239,0.1)',   border:'rgba(0,173,239,0.3)',   text:'#00ADEF' },
+  Data:        { bg:'rgba(139,92,246,0.1)',  border:'rgba(139,92,246,0.3)',  text:'#A78BFA' },
+  AI:          { bg:'rgba(16,185,129,0.1)',  border:'rgba(16,185,129,0.3)',  text:'#34D399' },
+  Integration: { bg:'rgba(243,112,33,0.1)',  border:'rgba(243,112,33,0.3)',  text:'#F37021' },
+  Automation:  { bg:'rgba(245,158,11,0.1)',  border:'rgba(245,158,11,0.3)',  text:'#F59E0B' },
+  CRM:         { bg:'rgba(239,68,68,0.1)',   border:'rgba(239,68,68,0.3)',   text:'#F87171' },
+  Security:    { bg:'rgba(239,68,68,0.12)',  border:'rgba(239,68,68,0.35)',  text:'#EF4444' },
+  DevOps:      { bg:'rgba(34,197,94,0.1)',   border:'rgba(34,197,94,0.3)',   text:'#22C55E' },
+  Other:       { bg:'rgba(107,114,128,0.1)', border:'rgba(107,114,128,0.25)',text:'#9CA3AF' },
+};
+const CAT_ORDER = ['Cloud','Data','AI','Integration','Automation','CRM','Security','DevOps','Other'];
+
 function tabTechStack(r) {
   if (!r.techStack?.length)
     return `<div class="empty"><div class="empty-ico">🔧</div>No tech stack data available</div>`;
+
+  const isRich = typeof r.techStack[0] === 'object';
+
+  // Flat strings (partial result from Apollo — before Claude has categorised)
+  if (!isRich) {
+    return `
+      ${r._partial ? `<div class="pending-banner">
+        <div class="spinner" style="border-color:var(--orange);border-top-color:transparent;width:14px;height:14px;flex-shrink:0"></div>
+        <div>Tech stack sourced from Apollo.io. Claude is categorising and adding GTM context — this view will update when analysis completes.</div>
+      </div>` : ''}
+      <div class="sec-label">Technology Stack — ${r.techStack.length} technologies</div>
+      <div class="tag-cloud">${r.techStack.map(t=>`<span class="tech-tag">${esc(String(t))}</span>`).join('')}</div>`;
+  }
+
+  // Rich objects from Claude — group by category
+  const groups = {};
+  for (const t of r.techStack) {
+    const cat = t.category || 'Other';
+    if (!groups[cat]) groups[cat] = [];
+    groups[cat].push(t);
+  }
+  const orderedCats = CAT_ORDER.filter(c => groups[c])
+    .concat(Object.keys(groups).filter(c => !CAT_ORDER.includes(c)));
+
+  const groupsHtml = orderedCats.map(cat => {
+    const col   = TECH_CAT_COLORS[cat] || TECH_CAT_COLORS.Other;
+    const cards = groups[cat].map(t => `
+      <div class="tech-card" style="background:${col.bg};border-color:${col.border}">
+        <div class="tech-card-name" style="color:${col.text}">${esc(t.name)}</div>
+        ${t.relevance ? `<div class="tech-card-rel">${esc(t.relevance)}</div>` : ''}
+      </div>`).join('');
+    return `
+      <div>
+        <div class="tech-cat-header" style="color:${col.text}">${cat} <span style="font-weight:400;opacity:.55">(${groups[cat].length})</span></div>
+        <div class="tech-cards-row">${cards}</div>
+      </div>`;
+  }).join('');
+
   return `
-    <div class="sec-label">Technology Stack — ${r.techStack.length} technologies identified</div>
-    <div class="tag-cloud">${r.techStack.map(t=>`<span class="tech-tag">${esc(t)}</span>`).join('')}</div>`;
+    <div class="sec-label" style="margin-bottom:16px">
+      Technology Stack — ${r.techStack.length} technologies · categorised &amp; contextualised by Claude Opus 4.7
+    </div>
+    <div class="tech-cat-grid">${groupsHtml}</div>`;
 }
 
 // ── TAB: LEADERSHIP ───────────────────────────────────────────
@@ -1073,6 +1136,28 @@ async function exportBrief(format) {
       btn.disabled = false;
       btn.innerHTML = format === 'text' ? '📄 Text Brief' : '🖨 Slide Deck';
     }
+  }
+}
+
+async function exportPptx() {
+  if (!S.selectedOrg) return;
+  const result = S.results.get(S.selectedOrg);
+  if (!result) return;
+  const btn = event?.currentTarget;
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Building PPTX…'; }
+  try {
+    const res = await fetch('/api/export/pptx', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ result }),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const safe = result.orgName.replace(/[^a-z0-9]/gi, '_');
+    downloadBlob(await res.blob(), `${safe}-GTM-Brief.pptx`);
+  } catch (err) {
+    alert(`PPTX export failed: ${err.message}`);
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = '📊 Export PPTX'; }
   }
 }
 

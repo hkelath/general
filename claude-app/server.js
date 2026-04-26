@@ -2,6 +2,7 @@ import 'dotenv/config';
 import express from 'express';
 import Anthropic from '@anthropic-ai/sdk';
 import ExcelJS from 'exceljs';
+import PptxGenJS from 'pptxgenjs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 
@@ -409,7 +410,9 @@ Return a single JSON object (no markdown fences) with this exact schema:
     "founded": "string or null",
     "website": "string or null"
   },
-  "techStack": ["tech1", "tech2"],
+  "techStack": [
+    { "name": "string", "category": "Cloud|Data|Integration|Automation|AI|CRM|Security|DevOps|Other", "relevance": "one sentence: GTM implication for HCLTech" }
+  ],
   "leadership": [
     { "name": "string", "title": "string", "linkedin": "url or null" }
   ],
@@ -456,6 +459,7 @@ Return a single JSON object (no markdown fences) with this exact schema:
 
 IMPORTANT:
 - Sort opportunities array — Strategic FY27 first, then Trending, then Other.
+- For techStack: categorise each technology into exactly one of: Cloud, Data, Integration, Automation, AI, CRM, Security, DevOps, Other. The relevance field must be one specific sentence about the GTM implication for HCLTech (e.g. which partner, which service line, which upsell angle).
 - For jobSignals: analyse the Tech Hiring & Job Signals research section. Each signal should represent a meaningful pattern (not a single job), and hclRelevance must directly map to a HCLTech service line or partner capability.
 Return ONLY the JSON object.`;
 
@@ -570,7 +574,7 @@ app.post('/api/export/excel', async (req, res) => {
             hq: r.profile?.hq || '', score: r.overallScore,
             summary: r.executiveSummary,
             topOpp: top?.title || '', vendors: top?.vendors?.join(', ') || '',
-            tech: r.techStack?.slice(0, 10).join(', ') || '',
+            tech: r.techStack?.slice(0, 10).map(t => typeof t === 'object' ? t.name : String(t)).join(', ') || '',
         });
     }
     styleSheet(ws1, HCL_NAVY);
@@ -681,7 +685,7 @@ Website: ${r.profile?.website || 'N/A'}
 ${r.profile?.description || ''}
 
 TECHNOLOGY STACK
-${r.techStack?.join(', ') || 'N/A'}
+${r.techStack?.map(t => typeof t === 'object' ? `${t.name} (${t.category})` : String(t)).join(', ') || 'N/A'}
 
 KEY LEADERSHIP
 ${r.leadership?.map(p => `• ${p.name} — ${p.title}`).join('\n') || 'N/A'}
@@ -811,7 +815,7 @@ ul{padding-left:18px}li{margin-bottom:6px;color:#374151;font-size:.88rem;line-he
         <div class="info-card"><div class="info-label">Revenue</div><div>${r.profile?.revenue || 'N/A'}</div></div>
       </div>
       <div class="section-label">Technology Stack</div>
-      <div>${r.techStack?.map(t => `<span class="tag t-blue">${t}</span>`).join('') || 'N/A'}</div>
+      <div>${r.techStack?.map(t => `<span class="tag t-blue">${typeof t === 'object' ? t.name : t}</span>`).join('') || 'N/A'}</div>
     </div>
     <div>
       <div class="section-label">Key Leadership</div>
@@ -847,6 +851,268 @@ ${oppSlides}
 </body>
 </html>`;
 }
+
+// ── PPTX builder ─────────────────────────────────────────────────────────────
+function buildPptx(r) {
+    const prs = new PptxGenJS();
+    prs.layout  = 'LAYOUT_WIDE';   // 10" × 5.625"
+    prs.author  = 'HCLTech Sales Intelligence';
+    prs.company = 'HCLTech Digital Business Services';
+    prs.subject = r.orgName;
+    prs.title   = `GTM Brief — ${r.orgName}`;
+
+    const NAVY   = '001A3A';
+    const ORANGE = 'F37021';
+    const BLUE   = '00ADEF';
+    const WHITE  = 'FFFFFF';
+    const GRAY   = '9CA3AF';
+    const LGRAY  = 'E9ECF0';
+    const BLK    = '111827';
+    const LGBG   = 'F9FAFB';
+    const BRDR   = 'E5E7EB';
+
+    const date  = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+    const trunc = (s, n) => { const t = String(s || ''); return t.length <= n ? t : t.slice(0, n - 1) + '…'; };
+
+    // Normalise tech stack to name strings
+    const techNames = (r.techStack || []).slice(0, 14).map(t => typeof t === 'object' ? t.name : String(t));
+
+    const addFooter = (sld) => {
+        sld.addText('Confidential — HCLTech Digital Business Services',
+            { x: 0.4, y: 5.37, w: 6, h: 0.22, fontSize: 7.5, color: GRAY });
+        sld.addText(date,
+            { x: 6.4, y: 5.37, w: 3.2, h: 0.22, fontSize: 7.5, color: GRAY, align: 'right' });
+    };
+
+    const addHeader = (sld, num, title, orgLabel) => {
+        sld.addText([
+            { text: `${num}  `, options: { color: ORANGE, fontSize: 18, bold: true } },
+            { text: title,      options: { color: WHITE,  fontSize: 13, bold: true } },
+        ], { x: 0, y: 0, w: 8.5, h: 0.55, fill: { color: NAVY }, valign: 'middle', margin: [0, 0, 0, 8] });
+        sld.addText(trunc(orgLabel || r.orgName, 28),
+            { x: 8.5, y: 0, w: 1.5, h: 0.55, fill: { color: NAVY }, fontSize: 8, color: ORANGE, align: 'right', valign: 'middle' });
+    };
+
+    // ── Slide 1: Cover ────────────────────────────────────────────────────────
+    const s1 = prs.addSlide();
+    s1.background = { color: NAVY };
+
+    // Orange footer bar
+    s1.addText(' ', { x: 0, y: 5.25, w: 10, h: 0.375, fill: { color: ORANGE } });
+
+    // Brand label
+    s1.addText('HCLTech  ·  Digital Business Services  ·  APAC', {
+        x: 0.5, y: 0.32, w: 9, h: 0.3,
+        fontSize: 9, color: ORANGE, bold: true, charSpacing: 1, align: 'left',
+    });
+
+    // Org name
+    s1.addText(trunc(r.orgName, 55), {
+        x: 0.5, y: 0.68, w: 9, h: 1.15,
+        fontSize: 36, color: WHITE, bold: true, align: 'left',
+    });
+
+    // Executive summary
+    s1.addText(trunc(r.executiveSummary || '', 280), {
+        x: 0.5, y: 1.82, w: 7.5, h: 1.35,
+        fontSize: 12.5, color: LGRAY, align: 'left', valign: 'top',
+    });
+
+    // Stats strip (4 boxes)
+    const coverStats = [
+        [`${r.overallScore || '—'}/10`, 'Opp Score'],
+        [String(r.opportunities?.length || 0), 'Opportunities'],
+        [trunc(r.profile?.employees || '—', 12), 'Employees'],
+        [trunc(r.profile?.revenue   || '—', 12), 'Revenue'],
+    ];
+    coverStats.forEach(([val, lbl], i) => {
+        const x = 0.5 + i * 2.25;
+        s1.addText(' ', { x, y: 3.4, w: 2.1, h: 1.0, fill: { color: '0a1e36' } });
+        s1.addText(val, { x, y: 3.5, w: 2.1, h: 0.45, fontSize: 17, color: ORANGE, bold: true, align: 'center' });
+        s1.addText(lbl, { x, y: 3.96, w: 2.1, h: 0.22, fontSize: 8, color: GRAY, align: 'center', charSpacing: 0.5 });
+    });
+
+    // Date line inside orange bar
+    s1.addText(`GTM Intelligence Brief  ·  ${date}`, {
+        x: 0.5, y: 5.25, w: 9, h: 0.375,
+        fontSize: 8, color: WHITE, align: 'right', valign: 'middle',
+    });
+
+    // ── Slide 2: Profile & Tech Stack ─────────────────────────────────────────
+    const s2 = prs.addSlide();
+    s2.background = { color: WHITE };
+    addHeader(s2, '01', 'Company Profile & Technology Stack');
+
+    // Description
+    if (r.profile?.description) {
+        s2.addText(trunc(r.profile.description, 210), {
+            x: 0.4, y: 0.67, w: 5.4, h: 0.65,
+            fontSize: 10, color: '4B5563', valign: 'top',
+        });
+    }
+
+    // Profile fields (left column)
+    const pFields = [
+        ['Industry',  r.profile?.industry],
+        ['HQ',        r.profile?.hq],
+        ['Employees', r.profile?.employees],
+        ['Revenue',   r.profile?.revenue],
+        ['Founded',   r.profile?.founded],
+    ].filter(([, v]) => v);
+
+    pFields.forEach(([lbl, val], i) => {
+        const y = 1.42 + i * 0.5;
+        s2.addText(lbl.toUpperCase(),
+            { x: 0.4, y, w: 1.15, h: 0.22, fontSize: 7, color: GRAY, bold: true, charSpacing: 0.4 });
+        s2.addText(trunc(String(val), 40),
+            { x: 1.6, y: y - 0.02, w: 4.1, h: 0.26, fontSize: 10, color: BLK });
+    });
+
+    // Vertical divider
+    s2.addText(' ', { x: 5.88, y: 0.62, w: 0.04, h: 4.5, fill: { color: BRDR } });
+
+    // Leadership (right column)
+    s2.addText('KEY LEADERSHIP', { x: 6.1, y: 0.67, w: 3.5, h: 0.22, fontSize: 7.5, color: GRAY, bold: true, charSpacing: 0.5 });
+    const leaders = (r.leadership || []).slice(0, 6);
+    if (leaders.length) {
+        const lText = leaders.map(p => `•  ${trunc(p.name, 22)}  ·  ${trunc(p.title, 35)}`).join('\n');
+        s2.addText(lText, { x: 6.1, y: 0.95, w: 3.5, h: 2.8, fontSize: 9.5, color: BLK, valign: 'top' });
+    } else {
+        s2.addText('No contacts found', { x: 6.1, y: 0.95, w: 3.5, h: 0.3, fontSize: 10, color: GRAY });
+    }
+
+    // Tech stack separator
+    s2.addText(' ', { x: 0, y: 4.3, w: 10, h: 0.04, fill: { color: BRDR } });
+    s2.addText('TECHNOLOGY STACK', { x: 0.4, y: 4.4, w: 2.5, h: 0.22, fontSize: 7.5, color: GRAY, bold: true, charSpacing: 0.5 });
+    s2.addText(techNames.length ? techNames.join('   ·   ') : 'No technology data available', {
+        x: 0.4, y: 4.68, w: 9.2, h: 0.6,
+        fontSize: 10, color: BLUE, valign: 'top',
+    });
+
+    addFooter(s2);
+
+    // ── Slide 3+: Opportunities (max 5) ──────────────────────────────────────
+    const opps = (r.opportunities || []).slice(0, 5);
+    opps.forEach((o, i) => {
+        const sn = prs.addSlide();
+        sn.background = { color: WHITE };
+
+        const tierCol = o.partnerTier?.includes('Strategic') ? ORANGE
+                      : o.partnerTier?.includes('Trending')  ? BLUE
+                      : '6B7280';
+        const slideNum = String(i + 2).padStart(2, '0');
+
+        addHeader(sn, slideNum, trunc(o.title, 65));
+
+        // Score + tier badge next to header (overlay on the right)
+        sn.addText(`${o.score || '?'}/10`,
+            { x: 8.5, y: 0, w: 0.8, h: 0.3, fontSize: 13, color: ORANGE, bold: true, align: 'center', valign: 'middle' });
+        sn.addText(o.partnerTier || 'Other',
+            { x: 8.5, y: 0.3, w: 0.85, h: 0.22, fontSize: 7.5, color: tierCol, bold: true, align: 'center' });
+
+        // Description
+        sn.addText(trunc(o.description || '', 270), {
+            x: 0.4, y: 0.63, w: 9.2, h: 0.82,
+            fontSize: 10.5, color: '374151', valign: 'top',
+        });
+
+        // 2×2 info grid
+        const infoFields = [
+            ['Business Value',  o.businessValue],
+            ['Urgency Driver',  o.urgencyDriver],
+            ['Economic Buyer',  o.economicBuyer],
+            ['Funding Source',  o.fundingSource],
+        ];
+        infoFields.forEach(([lbl, val], j) => {
+            const col = j % 2, row = Math.floor(j / 2);
+            const x = 0.4 + col * 4.75;
+            const y = 1.52 + row * 0.87;
+            sn.addText(' ', { x, y, w: 4.5, h: 0.78, fill: { color: LGBG } });
+            sn.addText(lbl.toUpperCase(),
+                { x: x + 0.1, y: y + 0.06, w: 4.3, h: 0.18, fontSize: 7, color: GRAY, bold: true, charSpacing: 0.4 });
+            sn.addText(trunc(val || '—', 90),
+                { x: x + 0.1, y: y + 0.27, w: 4.3, h: 0.42, fontSize: 9.5, color: BLK });
+        });
+
+        // Vendors + HCL Services
+        const vLine = (o.vendors || []).slice(0, 6).join('  ·  ');
+        const sLine = (o.hclServices || []).slice(0, 5).join('  ·  ');
+        sn.addText([
+            { text: 'VENDORS:  ', options: { color: ORANGE, bold: true, fontSize: 8.5 } },
+            { text: trunc(vLine || 'N/A', 100), options: { color: BLK, fontSize: 9 } },
+        ], { x: 0.4, y: 3.35, w: 9.2, h: 0.26 });
+        sn.addText([
+            { text: 'HCL SERVICES:  ', options: { color: BLUE, bold: true, fontSize: 8.5 } },
+            { text: trunc(sLine || 'N/A', 100), options: { color: BLK, fontSize: 9 } },
+        ], { x: 0.4, y: 3.63, w: 9.2, h: 0.26 });
+
+        // Power of Three bar or competitive risk
+        if (o.powerOfThree?.applicable) {
+            sn.addText(' ', { x: 0.4, y: 3.97, w: 9.2, h: 0.62, fill: { color: 'FFF7ED' } });
+            sn.addText([
+                { text: '⚡ Power of Three:  ', options: { color: ORANGE, bold: true, fontSize: 9.5 } },
+                { text: trunc(o.powerOfThree.combination || '', 55), options: { color: BLK, fontSize: 9.5, bold: true } },
+            ], { x: 0.55, y: 4.0, w: 8.8, h: 0.26 });
+            if (o.powerOfThree.proposition) {
+                sn.addText(trunc(o.powerOfThree.proposition, 130),
+                    { x: 0.55, y: 4.28, w: 8.8, h: 0.26, fontSize: 9, color: '78350F' });
+            }
+        } else if (o.competitiveRisk) {
+            sn.addText(' ', { x: 0.4, y: 3.97, w: 9.2, h: 0.46, fill: { color: 'FEF2F2' } });
+            sn.addText([
+                { text: '⚠ Competitive Risk:  ', options: { color: 'B91C1C', bold: true, fontSize: 9 } },
+                { text: trunc(o.competitiveRisk, 120), options: { color: 'B91C1C', fontSize: 9 } },
+            ], { x: 0.55, y: 4.0, w: 8.8, h: 0.38, valign: 'middle' });
+        }
+
+        addFooter(sn);
+    });
+
+    // ── Last Slide: Talking Points & Next Actions ─────────────────────────────
+    const lastNum = String(opps.length + 2).padStart(2, '0');
+    const sl = prs.addSlide();
+    sl.background = { color: WHITE };
+    addHeader(sl, lastNum, 'Talking Points & Next Actions');
+
+    sl.addText(' ', { x: 4.97, y: 0.62, w: 0.04, h: 4.5, fill: { color: BRDR } });
+
+    sl.addText('CONVERSATION STARTERS', { x: 0.4, y: 0.68, w: 4.4, h: 0.22, fontSize: 7.5, color: GRAY, bold: true, charSpacing: 0.5 });
+    const tp = (r.talkingPoints || []).slice(0, 7);
+    if (tp.length) {
+        sl.addText(tp.map(t => `•  ${trunc(t, 95)}`).join('\n'), {
+            x: 0.4, y: 0.98, w: 4.4, h: 4.2, fontSize: 10, color: BLK, valign: 'top',
+        });
+    }
+
+    sl.addText('NEXT ACTIONS', { x: 5.2, y: 0.68, w: 4.4, h: 0.22, fontSize: 7.5, color: GRAY, bold: true, charSpacing: 0.5 });
+    const na = (r.nextActions || []).slice(0, 7);
+    if (na.length) {
+        sl.addText(na.map((a, i) => `${i + 1}.  ${trunc(a, 95)}`).join('\n'), {
+            x: 5.2, y: 0.98, w: 4.4, h: 4.2, fontSize: 10, color: BLK, valign: 'top',
+        });
+    }
+
+    addFooter(sl);
+
+    return prs;
+}
+
+// ── POST /api/export/pptx ─────────────────────────────────────────────────────
+app.post('/api/export/pptx', async (req, res) => {
+    const { result } = req.body;
+    if (!result) return res.status(400).json({ error: 'No result data.' });
+    try {
+        const prs = buildPptx(result);
+        const buf = await prs.write('nodebuffer');
+        const safe = (result.orgName || 'Brief').replace(/[^a-z0-9]/gi, '-');
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.presentationml.presentation');
+        res.setHeader('Content-Disposition', `attachment; filename="${safe}-GTM-Brief.pptx"`);
+        res.send(Buffer.isBuffer(buf) ? buf : Buffer.from(buf));
+    } catch (err) {
+        console.error('PPTX export error:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
 
 // ── Health check ──────────────────────────────────────────────────────────────
 app.get('/api/health', (req, res) => {
