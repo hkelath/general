@@ -193,6 +193,29 @@ a:hover{text-decoration:underline}
 .empty{text-align:center;padding:50px 20px;color:var(--muted)}
 .empty-ico{font-size:2.5rem;margin-bottom:10px;opacity:.35}
 
+/* ── Activity log ── */
+.activity-log{margin-top:14px;max-height:160px;overflow-y:auto;display:flex;flex-direction:column;gap:3px}
+.log-line{display:flex;gap:9px;align-items:baseline;padding:3px 0;border-bottom:1px solid rgba(255,255,255,.03)}
+.log-ts{font-size:.7rem;color:var(--muted);opacity:.55;flex-shrink:0;font-variant-numeric:tabular-nums}
+.log-msg{font-size:.78rem;color:#9CA3AF;line-height:1.4}
+.log-line.hl .log-msg{color:var(--orange)}
+.log-line.ok .log-msg{color:#22C55E}
+
+/* ── Partial/pending state ── */
+.pending-banner{display:flex;align-items:center;gap:10px;background:rgba(243,112,33,.08);border:1px solid rgba(243,112,33,.25);border-radius:8px;padding:14px 18px;margin-bottom:18px;font-size:.86rem;color:var(--orange)}
+
+/* ── Sources tab ── */
+.source-section{margin-bottom:22px}
+.source-badge{display:inline-flex;align-items:center;gap:6px;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:4px 11px;font-size:.76rem;color:var(--muted);margin-bottom:10px}
+.source-badge.active{border-color:var(--orange);color:var(--orange)}
+.tavily-query{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:13px 15px;margin-bottom:10px}
+.tavily-q-label{font-size:.76rem;font-weight:700;color:var(--text);margin-bottom:6px}
+.tavily-q-answer{font-size:.8rem;color:#9CA3AF;line-height:1.6;margin-bottom:8px}
+.source-link-list{display:flex;flex-direction:column;gap:4px}
+.source-link{font-size:.76rem;color:var(--blue);display:flex;align-items:baseline;gap:6px;line-height:1.45}
+.source-link:hover{color:#7DD3FC}
+.source-link-date{font-size:.68rem;color:var(--muted);flex-shrink:0}
+
 .fade-in{animation:fadeIn .25s ease}
 @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 
@@ -299,6 +322,7 @@ a:hover{text-decoration:underline}
       <div class="prog-bar-inner" id="progBar" style="width:0%"></div>
     </div>
     <div class="chip-list" id="chipList"></div>
+    <div class="activity-log" id="activityLog"></div>
   </div>
 
   <!-- Results -->
@@ -325,15 +349,29 @@ a:hover{text-decoration:underline}
 <script>
 // ── STATE ─────────────────────────────────────────────────────
 const S = {
-  mode:        'single',
-  analyzing:   false,
-  results:     new Map(),   // orgName -> result object
-  statuses:    new Map(),   // orgName -> 'researching'|'analysing'|'retrying'|'done'|'error'
-  selectedOrg: null,
-  activeTab:   'overview',
-  total:       0,
-  done:        0,
+  mode:           'single',
+  analyzing:      false,
+  results:        new Map(),   // orgName -> result object (partial or full)
+  statuses:       new Map(),   // orgName -> status string
+  sources:        new Map(),   // orgName -> raw sources object
+  selectedOrg:    null,
+  activeTab:      'overview',
+  total:          0,
+  done:           0,
+  streamComplete: false,       // set true when 'done' SSE event received
 };
+
+// ── ACTIVITY LOG ──────────────────────────────────────────────
+function addLog(msg, type = '') {
+  const el   = document.getElementById('activityLog');
+  if (!el) return;
+  const ts   = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  const line = document.createElement('div');
+  line.className = `log-line${type ? ' ' + type : ''}`;
+  line.innerHTML = `<span class="log-ts">${ts}</span><span class="log-msg">${esc(msg)}</span>`;
+  el.appendChild(line);
+  el.scrollTop = el.scrollHeight;
+}
 
 // ── HEALTH CHECK ──────────────────────────────────────────────
 (async () => {
@@ -380,11 +418,13 @@ async function handleAnalyze() {
   // Reset state
   S.results.clear();
   S.statuses.clear();
-  S.selectedOrg = null;
-  S.activeTab   = 'overview';
-  S.done        = 0;
-  S.total       = orgs.length;
-  S.analyzing   = true;
+  S.sources.clear();
+  S.selectedOrg    = null;
+  S.activeTab      = 'overview';
+  S.done           = 0;
+  S.total          = orgs.length;
+  S.analyzing      = true;
+  S.streamComplete = false;
 
   const btn = document.getElementById('analyzeBtn');
   btn.disabled = true;
@@ -395,8 +435,9 @@ async function handleAnalyze() {
   const pp = document.getElementById('progressPanel');
   pp.classList.add('visible');
   document.getElementById('resultsSection').style.display = 'none';
-  document.getElementById('chipList').innerHTML = '';
-  document.getElementById('progBar').style.width = '0%';
+  document.getElementById('chipList').innerHTML   = '';
+  document.getElementById('activityLog').innerHTML = '';
+  document.getElementById('progBar').style.width   = '0%';
   document.getElementById('progTitle').style.color = '';
   document.getElementById('progTitle').textContent =
     S.mode === 'industry' ? `Discovering companies in ${industry}…` : 'Analysing…';
@@ -442,6 +483,7 @@ async function handleAnalyze() {
       if (done) break;
       buf += decoder.decode(value, { stream: true });
       flush();
+      if (S.streamComplete) break;  // server sent 'done' event; exit without waiting for TCP close
     }
 
   } catch (err) {
@@ -461,47 +503,94 @@ function onSSE(type, data) {
 
     case 'status':
       document.getElementById('progTitle').textContent = data.message;
+      addLog(data.message);
       break;
 
     case 'discovered':
       S.total = data.orgs.length;
       document.getElementById('progTitle').textContent =
         `Discovered ${data.orgs.length} organisations — analysing…`;
+      addLog(`Discovered ${data.orgs.length} organisations: ${data.orgs.slice(0,5).join(', ')}${data.orgs.length > 5 ? '…' : ''}`, 'hl');
       break;
 
     case 'start':
       S.total = data.total;
       updateProgress();
+      addLog(`Starting analysis of ${data.total} organisation${data.total !== 1 ? 's' : ''}…`);
       break;
 
     case 'progress':
       S.statuses.set(data.org, data.status);
       renderChips();
+      if (data.message) addLog(data.message);
       break;
+
+    case 'research_data': {
+      // Store sources for the Sources tab
+      S.sources.set(data.org, data.sources);
+
+      // Build partial result to show immediately while Claude analyses
+      const partial = {
+        orgName:          data.org,
+        _partial:         true,
+        logoUrl:          data.profile?.logo || null,
+        website:          data.profile?.website || null,
+        executiveSummary: '⏳ Claude Opus 4.7 is reasoning — opportunities and GTM brief loading…',
+        overallScore:     null,
+        profile:          data.profile || {},
+        techStack:        data.techStack || [],
+        leadership:       data.leadership || [],
+        recentNews:       (data.newsItems || []).map(n => ({
+          headline:    n.title,
+          url:         n.url,
+          date:        n.date || null,
+          significance:'Full analysis loading…',
+        })),
+        maActivity:    [],
+        opportunities: [],
+        talkingPoints: [],
+        nextActions:   [],
+      };
+      S.results.set(data.org, partial);
+
+      const techCount = data.techStack?.length || 0;
+      const contactCount = data.leadership?.length || 0;
+      const newsCount = data.newsItems?.length || 0;
+      addLog(`Research done for ${data.org} — ${techCount} tech items, ${contactCount} contacts, ${newsCount} news items found`, 'hl');
+
+      // Show partial immediately
+      if (!S.selectedOrg) S.selectedOrg = data.org;
+      renderResults();
+      if (S.selectedOrg === data.org) renderDetail();
+      break;
+    }
 
     case 'result':
       S.statuses.set(data.org, 'done');
-      S.results.set(data.org, data.data);
+      S.results.set(data.org, data.data);   // replaces partial with full result
       S.done++;
       updateProgress();
       renderChips();
       renderResults();
-      if (!S.selectedOrg) {
-        S.selectedOrg = data.org;
-        renderDetail();
-      }
+      // Re-render detail if this org is currently selected
+      if (S.selectedOrg === data.org) renderDetail();
+      else if (!S.selectedOrg) { S.selectedOrg = data.org; renderDetail(); }
+      addLog(`✓ Full analysis ready for ${data.org}`, 'ok');
       break;
 
     case 'error':
       document.getElementById('progTitle').textContent = `Error: ${data.message}`;
       document.getElementById('progTitle').style.color = '#EF4444';
+      addLog(`Error: ${data.message}`);
       break;
 
     case 'done':
-      document.getElementById('progBar').style.width = '100%';
+      S.streamComplete = true;
+      document.getElementById('progBar').style.width   = '100%';
       document.getElementById('progTitle').textContent =
         `Analysis complete — ${data.total} organisation${data.total !== 1 ? 's' : ''}`;
       document.getElementById('progTitle').style.color = '#22C55E';
+      addLog(`✓ All done — ${data.total} org${data.total !== 1 ? 's' : ''} analysed`, 'ok');
       break;
   }
 }
@@ -658,12 +747,14 @@ function renderDetail() {
   ).join('');
 
   // Tabs
+  const hasSources = S.sources.has(S.selectedOrg);
   const tabs = [
     { id: 'overview',      label: 'Overview' },
-    { id: 'opportunities', label: `Opportunities (${r.opportunities?.length || 0})` },
+    { id: 'opportunities', label: r._partial ? '⏳ Opportunities' : `Opportunities (${r.opportunities?.length || 0})` },
     { id: 'techstack',     label: `Tech Stack (${r.techStack?.length || 0})` },
     { id: 'leadership',    label: `Leadership (${r.leadership?.length || 0})` },
     { id: 'intelligence',  label: `Intelligence (${(r.recentNews?.length||0)+(r.maActivity?.length||0)})` },
+    ...(hasSources ? [{ id: 'sources', label: '🔬 Sources' }] : []),
   ];
   document.getElementById('tabsRow').innerHTML = tabs.map(t =>
     `<button class="tab-btn ${S.activeTab===t.id?'active':''}" data-tab="${t.id}"
@@ -683,12 +774,21 @@ function renderTabBody() {
   void el.offsetWidth;
   el.classList.add('fade-in');
   switch (S.activeTab) {
-    case 'overview':      el.innerHTML = tabOverview(r);      break;
-    case 'opportunities': el.innerHTML = tabOpportunities(r); break;
-    case 'techstack':     el.innerHTML = tabTechStack(r);     break;
-    case 'leadership':    el.innerHTML = tabLeadership(r);    break;
-    case 'intelligence':  el.innerHTML = tabIntelligence(r);  break;
+    case 'overview':      el.innerHTML = tabOverview(r);                              break;
+    case 'opportunities': el.innerHTML = tabOpportunities(r);                         break;
+    case 'techstack':     el.innerHTML = tabTechStack(r);                             break;
+    case 'leadership':    el.innerHTML = tabLeadership(r);                            break;
+    case 'intelligence':  el.innerHTML = tabIntelligence(r);                          break;
+    case 'sources':       el.innerHTML = tabSources(S.sources.get(S.selectedOrg));    break;
   }
+}
+
+// ── PARTIAL BANNER ────────────────────────────────────────────
+function partialBanner() {
+  return `<div class="pending-banner">
+    <div class="spinner" style="border-color:var(--orange);border-top-color:transparent;width:14px;height:14px;flex-shrink:0"></div>
+    <div>Claude Opus 4.7 is analysing — company profile and research data shown below. Opportunities and GTM brief will appear when ready.</div>
+  </div>`;
 }
 
 // ── TAB: OVERVIEW ─────────────────────────────────────────────
@@ -713,6 +813,7 @@ function tabOverview(r) {
     '<li style="opacity:.45">None identified</li>';
 
   return `
+    ${r._partial ? partialBanner() : ''}
     <div class="sec-label">Company Profile</div>
     ${r.profile?.description ? `<p class="desc-text">${esc(r.profile.description)}</p>` : ''}
     <div class="info-grid">${infoCards}</div>
@@ -730,6 +831,8 @@ function tabOverview(r) {
 
 // ── TAB: OPPORTUNITIES ────────────────────────────────────────
 function tabOpportunities(r) {
+  if (r._partial)
+    return `${partialBanner()}<div class="empty" style="padding:30px 20px"><div class="empty-ico">🎯</div>Opportunities loading — Claude is analysing the research data now.</div>`;
   if (!r.opportunities?.length)
     return `<div class="empty"><div class="empty-ico">🎯</div>No opportunities identified</div>`;
 
@@ -817,7 +920,7 @@ function tabIntelligence(r) {
         ${n.date ? `<div class="news-date">${esc(n.date)}</div>` : ''}
         <div class="news-sig">${esc(n.significance)}</div>
         ${n.url ? `<a href="${esc(n.url)}" target="_blank" rel="noopener"
-            style="font-size:.73rem;color:var(--blue);margin-top:4px;display:inline-block">Source →</a>` : ''}
+            style="font-size:.73rem;color:var(--blue);margin-top:5px;display:inline-block">🔗 Read source →</a>` : ''}
       </div>`).join('');
     html += `<div class="sec-label">Recent News & Developments (${r.recentNews.length})</div>
              <div class="news-list">${items}</div>`;
@@ -835,6 +938,57 @@ function tabIntelligence(r) {
 
   return html ||
     `<div class="empty"><div class="empty-ico">📰</div>No intelligence data available</div>`;
+}
+
+// ── TAB: SOURCES (under-the-hood peek) ───────────────────────
+function tabSources(src) {
+  if (!src) return `<div class="empty"><div class="empty-ico">🔬</div>No source data available</div>`;
+
+  let html = `<div class="sec-label">Data Sources Used</div>`;
+
+  // Apollo badge
+  html += `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px">
+    <span class="source-badge ${src.apolloUsed ? 'active' : ''}">
+      ${src.apolloUsed ? '✓' : '✗'} Apollo.io firmographics
+    </span>
+    <span class="source-badge active">✓ Tavily deep web search (5 queries)</span>
+    <span class="source-badge active">✓ Claude Opus 4.7 synthesis</span>
+  </div>`;
+
+  // Apollo detail
+  if (src.apolloUsed && src.apolloOrg) {
+    html += `<div class="source-section">
+      <div class="sec-label">Apollo.io — Organisation Profile</div>
+      <div class="tavily-query">
+        <div class="tavily-q-label">${esc(src.apolloOrg.name || '')}</div>
+        <div class="source-link-list">
+          ${src.apolloOrg.website ? `<a href="${esc(src.apolloOrg.website)}" target="_blank" rel="noopener" class="source-link">🔗 ${esc(src.apolloOrg.website)}</a>` : ''}
+          ${src.apolloOrg.linkedin ? `<a href="${esc(src.apolloOrg.linkedin)}" target="_blank" rel="noopener" class="source-link">🔗 LinkedIn profile</a>` : ''}
+        </div>
+      </div>
+    </div>`;
+  }
+
+  // Tavily queries
+  if (src.tavilyQueries?.length) {
+    html += `<div class="source-section"><div class="sec-label">Tavily — Web Research Queries</div>`;
+    html += src.tavilyQueries.map(q => {
+      const links = (q.results || []).map(r =>
+        `<a href="${esc(r.url)}" target="_blank" rel="noopener" class="source-link">
+          🔗 ${esc(r.title)}
+          ${r.date ? `<span class="source-link-date">${esc(r.date)}</span>` : ''}
+        </a>`
+      ).join('');
+      return `<div class="tavily-query">
+        <div class="tavily-q-label">${esc(q.label)}</div>
+        ${q.answer ? `<div class="tavily-q-answer">${esc(q.answer)}</div>` : ''}
+        <div class="source-link-list">${links || '<span style="font-size:.75rem;color:var(--muted)">No URLs returned</span>'}</div>
+      </div>`;
+    }).join('');
+    html += `</div>`;
+  }
+
+  return html;
 }
 
 // ── EXPORTS ───────────────────────────────────────────────────

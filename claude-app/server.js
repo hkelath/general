@@ -320,9 +320,53 @@ app.post('/api/analyze', async (req, res) => {
         // Process in batches of 3 (parallel within batch)
         for (let i = 0; i < orgList.length; i += 3) {
             await Promise.all(orgList.slice(i, i + 3).map(async (orgName) => {
-                sendEvent(res, 'progress', { org: orgName, status: 'researching' });
+                sendEvent(res, 'progress', { org: orgName, status: 'researching',
+                    message: `🔍 Searching Tavily (news, tech stack, leadership, M&A, strategy) + Apollo.io for ${orgName}…` });
                 const research = await researchOrg(orgName);
-                sendEvent(res, 'progress', { org: orgName, status: 'analysing' });
+
+                // Emit interim data immediately so UI can show partial results
+                const tavilyAll = [
+                    ...(research.news?.results     || []).map(r => ({ ...r, _query: 'News & Announcements' })),
+                    ...(research.tech?.results     || []).map(r => ({ ...r, _query: 'Technology & Infrastructure' })),
+                    ...(research.leadership?.results|| []).map(r => ({ ...r, _query: 'Leadership & Executives' })),
+                    ...(research.ma?.results       || []).map(r => ({ ...r, _query: 'M&A Activity' })),
+                    ...(research.strategy?.results || []).map(r => ({ ...r, _query: 'Business Strategy' })),
+                ];
+                sendEvent(res, 'research_data', {
+                    org: orgName,
+                    profile: research.apollo ? {
+                        description: research.apollo.description,
+                        industry:    research.apollo.industry,
+                        employees:   String(research.apollo.employees || ''),
+                        revenue:     research.apollo.revenue   || '',
+                        hq:          research.apollo.hq        || '',
+                        founded:     String(research.apollo.founded || ''),
+                        website:     research.apollo.website   || '',
+                        linkedin:    research.apollo.linkedin  || '',
+                        logo:        research.apollo.logo      || '',
+                    } : {},
+                    techStack:  research.apollo?.technologies?.slice(0, 25) || [],
+                    leadership: (research.people || []).map(p => ({
+                        name: p.name, title: p.title, linkedin: p.linkedin, email: p.email,
+                    })),
+                    newsItems: (research.news?.results || []).slice(0, 6).map(r => ({
+                        title: r.title, url: r.url, content: r.content, date: r.published_date,
+                    })),
+                    sources: {
+                        apolloUsed: !!research.apollo,
+                        apolloOrg:  research.apollo ? { name: research.apollo.name, website: research.apollo.website, linkedin: research.apollo.linkedin } : null,
+                        tavilyQueries: [
+                            { label: 'News & Announcements',     answer: research.news?.answer,       results: (research.news?.results      || []).map(r => ({ title: r.title, url: r.url, date: r.published_date })) },
+                            { label: 'Technology & Infrastructure', answer: research.tech?.answer,    results: (research.tech?.results      || []).map(r => ({ title: r.title, url: r.url, date: r.published_date })) },
+                            { label: 'Leadership & Executives',  answer: research.leadership?.answer, results: (research.leadership?.results|| []).map(r => ({ title: r.title, url: r.url, date: r.published_date })) },
+                            { label: 'M&A Activity',             answer: research.ma?.answer,         results: (research.ma?.results        || []).map(r => ({ title: r.title, url: r.url, date: r.published_date })) },
+                            { label: 'Business Strategy',        answer: research.strategy?.answer,   results: (research.strategy?.results  || []).map(r => ({ title: r.title, url: r.url, date: r.published_date })) },
+                        ].filter(q => q.answer || q.results.length),
+                    },
+                });
+
+                sendEvent(res, 'progress', { org: orgName, status: 'analysing',
+                    message: `🧠 Claude Opus 4.7 reasoning about ${orgName} (adaptive thinking)…` });
 
                 let result;
                 const callClaude = async (prompt) => {
