@@ -20,7 +20,7 @@ exportable slide decks — powered by Claude Opus 4.7, Tavily, and Apollo.io.
 | Tavily | Yes — 1,000 searches/month | tavily.com |
 | Apollo.io | Yes — 50 credits/month | apollo.io |
 | Render | Yes — 1 free web service | render.com |
-| GitLab | Yes | gitlab.com |
+| GitHub | Yes | github.com |
 
 **Estimated cost per org analysed:** $0.50–$2.00 (Anthropic API only; others free on free tier)
 
@@ -49,10 +49,10 @@ exportable slide decks — powered by Claude Opus 4.7, Tavily, and Apollo.io.
 
 ## Step 2 — Fork the Repository
 
-1. Log in to [gitlab.com](https://gitlab.com)
-2. Go to: `https://gitlab.com/work4770845/opportunityanalyser`
-3. Click **Fork** (top right) → fork to your own namespace
-4. Your copy will be at: `https://gitlab.com/YOUR-USERNAME/opportunityanalyser`
+1. Log in to [github.com](https://github.com)
+2. Go to: `https://github.com/hkelath/hcltech-sales-intelligence`
+3. Click **Fork** (top right) → fork to your own account
+4. Your copy will be at: `https://github.com/YOUR-USERNAME/hcltech-sales-intelligence`
 
 ---
 
@@ -61,8 +61,8 @@ exportable slide decks — powered by Claude Opus 4.7, Tavily, and Apollo.io.
 1. Go to [render.com](https://render.com) and sign up (GitHub or Google login works)
 2. Click **New** → **Web Service**
 3. Choose **Connect a Git repository**
-4. Select **GitLab** and authorise Render to access your GitLab account
-5. Select your forked `opportunityanalyser` repository
+4. Select **GitHub** and authorise Render to access your GitHub account
+5. Select your forked `hcltech-sales-intelligence` repository
 6. Render will detect the settings automatically. Confirm:
    - **Name:** anything you like (e.g. `my-sales-intelligence`)
    - **Root Directory:** `claude-app`
